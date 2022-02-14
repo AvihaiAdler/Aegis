@@ -1,0 +1,35 @@
+plugins {
+	id 'java'
+}
+
+group = 'VroomVroom'
+version = '0.0.1'
+sourceCompatibility = '16'
+targetCompatibility = '16'
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+  implementation 'org.javacord:javacord:3.4.0'
+  
+  // https://mvnrepository.com/artifact/org.tinylog/tinylog-api
+  implementation 'org.tinylog:tinylog-api:2.4.1'
+  
+  // https://mvnrepository.com/artifact/org.tinylog/tinylog-impl
+  implementation 'org.tinylog:tinylog-impl:2.4.1'
+  
+  // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver
+  implementation 'org.mongodb:mongodb-driver:3.12.10'
+  
+  // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+  
+  // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync
+  //implementation 'org.mongodb:mongodb-driver-sync:4.4.1'
+}
+
