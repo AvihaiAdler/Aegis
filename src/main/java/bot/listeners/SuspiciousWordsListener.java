@@ -18,8 +18,8 @@ public class SuspiciousWordsListener implements MessageCreateListener {
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
-    if (event.getServer().isPresent() && !event.getMessageAuthor().isBotUser()
-            && !event.getMessageAttachments().isEmpty()) {
+    if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()
+            && !event.getMessage().getEmbeds().isEmpty()) {
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       event.getMessage().getEmbeds().forEach(embed -> {
         if (isSuspicious(embed, guild))
