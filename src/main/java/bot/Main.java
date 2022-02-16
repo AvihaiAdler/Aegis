@@ -26,7 +26,6 @@ import bot.util.ConfigManager;
 /*
  * TODO:
  * db.guilds.drop()
- * add a check whether we already have a GuildEntity in the db before writing to it
  * command listener
  * bot mention listener
  */
@@ -99,7 +98,6 @@ public class Main {
         
         if(guild == null) {
           dbManager.insert(new GuildEntity(serverId));
-          System.out.println("guild is null");
           return;
         }
         

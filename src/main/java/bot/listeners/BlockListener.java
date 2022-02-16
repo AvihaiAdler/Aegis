@@ -2,14 +2,12 @@ package bot.listeners;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 
 import bot.dal.DBManager;
+import bot.util.Misc;
 
 public class BlockListener implements MessageCreateListener {
   private DBManager dbManager;
@@ -38,7 +36,7 @@ public class BlockListener implements MessageCreateListener {
       
       Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
               .stream()
-              .filter(this::containsUrl)
+              .filter(Misc::containsUrl)
               .map(String::trim)
               .forEach(url -> {
                 if (guild.getBlockedUrls().add(url)) blockedUrls.add(url);
@@ -54,14 +52,4 @@ public class BlockListener implements MessageCreateListener {
       } 
     }
   }
-  
-  private boolean containsUrl(String str) {
-    final String urlRegex = "<?\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>?";
-    if(str == null)
-      return false;
-    var content = Arrays.asList(str.split("\\s+")).stream()
-      .filter(word -> Pattern.matches(urlRegex, word))
-      .collect(Collectors.toList()); 
-    return !content.isEmpty();
-  } 
 }

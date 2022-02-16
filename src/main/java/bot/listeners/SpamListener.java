@@ -1,14 +1,10 @@
 package bot.listeners;
 
-import java.util.Arrays;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
-
 import bot.dal.DBManager;
+import bot.util.Misc;
 
 public class SpamListener implements MessageCreateListener {
   private DBManager dbManager;
@@ -39,20 +35,10 @@ public class SpamListener implements MessageCreateListener {
       
       // if the guild is 'restricted' 
       if (guild.getRestricted() && event.getMessage().mentionsEveryone()) {
-        if(!event.getMessage().getEmbeds().isEmpty() || containsUrl(event.getMessageContent()) && event.getChannel().canYouManageMessages()) {
+        if(!event.getMessage().getEmbeds().isEmpty() || Misc.containsUrl(event.getMessageContent()) && event.getChannel().canYouManageMessages()) {
           event.deleteMessage();
         }
       }
     }
   }
-  
-  private boolean containsUrl(String str) {
-    final String urlRegex = "<?\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>?";
-    if(str == null)
-      return false;
-    var content = Arrays.asList(str.split("\\s+")).stream()
-      .filter(word -> Pattern.matches(urlRegex, word))
-      .collect(Collectors.toList()); 
-    return !content.isEmpty();
-  } 
 }
