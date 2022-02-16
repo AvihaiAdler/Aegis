@@ -11,10 +11,12 @@ import org.javacord.api.listener.message.MessageCreateListener;
 
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
+import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
 import bot.listeners.SpamListener;
 import bot.listeners.SuspectListener;
 import bot.listeners.SuspiciousWordsListener;
+import bot.listeners.ThresholdListener;
 import bot.listeners.UnrestrictListener;
 import bot.listeners.UnsuspectListener;
 import bot.util.ConfigManager;
@@ -55,9 +57,10 @@ public class Main {
     commands.put("server", null);
     commands.put("suspect", new SuspectListener(dbManager, discordApi));
     commands.put("unsuspect", new UnsuspectListener(dbManager, discordApi));
+    commands.put("prefix", new PrefixListener(dbManager, discordApi));
     commands.put("block", null);
     commands.put("unblock", null);
-    commands.put("theshold", null);
+    commands.put("threshold", new ThresholdListener(dbManager, discordApi));
     
     // Server leave listener
     discordApi.addServerLeaveListener(leaveEvent -> {
@@ -94,6 +97,8 @@ public class Main {
         
         if(guild == null) {
           dbManager.insert(new GuildEntity(serverId));
+          System.out.println("guild is null");
+          return;
         }
         
         commands.keySet().forEach(key -> {

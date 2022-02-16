@@ -18,8 +18,7 @@ public class SuspiciousWordsListener implements MessageCreateListener {
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
-    if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()
-            && !event.getMessage().getEmbeds().isEmpty()) {
+    if (event.isServerMessage() && !event.getMessageAuthor().isBotUser() && !event.getMessage().getEmbeds().isEmpty()) {
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       event.getMessage().getEmbeds().forEach(embed -> {
         if (isSuspicious(embed, guild))
@@ -39,15 +38,18 @@ public class SuspiciousWordsListener implements MessageCreateListener {
     return sus;
   }
   
+  /*
+   * count the number of suspicious words in a string and compare it to the threshold
+   */
   private boolean checkString(String str, GuildEntity guild) {
     List<Integer> scores = new ArrayList<>();
     Arrays.asList(convertUnicode(str).split("\\s+")).forEach(word -> {
-      if(guild.getSuspiciousWords() != null && guild.getSuspiciousWords().get(word) != null)
-        scores.add(guild.getSuspiciousWords().get(word));
+      if(guild.getSuspiciousWords() != null && guild.getSuspiciousWords().contains(word))
+        scores.add(1);
     });
 
-    int weight = scores.stream().reduce(0, (a, b) -> a+b);
-    if(weight >= guild.getThreshold())
+    int wordsCount = scores.stream().reduce(0, (a, b) -> a+b);
+    if(wordsCount >= guild.getThreshold())
       return true;
     return false;
 }

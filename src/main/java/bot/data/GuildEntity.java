@@ -1,8 +1,6 @@
 package bot.data;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.bson.codecs.pojo.annotations.BsonId;
@@ -14,7 +12,7 @@ public class GuildEntity {
   private String prefix;
   private boolean restricted;
   private int threshold;
-  private Map<String, Integer> suspiciousWords;
+  private Set<String> suspiciousWords;
   private Set<String> blockedUrls;
   
   public GuildEntity() {
@@ -26,7 +24,7 @@ public class GuildEntity {
     prefix = "!";
     threshold = 0;
     restricted = false;
-    suspiciousWords = new HashMap<>();
+    suspiciousWords = new HashSet<>();
     blockedUrls = new HashSet<>();
   }
   
@@ -39,11 +37,11 @@ public class GuildEntity {
     this.id = id;
   }
 
-  public Map<String, Integer> getSuspiciousWords() {
+  public Set<String> getSuspiciousWords() {
     return suspiciousWords;
   }
 
-  public void setSuspiciousWords(Map<String, Integer> suspiciousWords) {
+  public void setSuspiciousWords(Set<String> suspiciousWords) {
     this.suspiciousWords = suspiciousWords;
   }
 

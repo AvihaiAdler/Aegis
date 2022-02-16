@@ -1,7 +1,7 @@
 package bot.listeners;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -31,13 +31,14 @@ public class UnsuspectListener implements MessageCreateListener {
       if(event.getMessageContent().split("\\s+").length < 2) return;
 
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      var removedWords = new ArrayList<String>();
+      var removedWords = new HashSet<String>();
       
       Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
               .stream()
+              .map(String::toLowerCase)
               .map(String::trim)
               .forEach(word -> {
-                if(guild.getSuspiciousWords().remove(word) != null) removedWords.add(word);
+                if (guild.getSuspiciousWords().remove(word)) removedWords.add(word);
               });
       
       dbManager.update(guild);
@@ -46,7 +47,7 @@ public class UnsuspectListener implements MessageCreateListener {
         StringBuilder msg = new StringBuilder();
         removedWords.forEach(word -> msg.append("**" + word + "**, "));
         msg.deleteCharAt(msg.lastIndexOf(","));
-        event.getChannel().sendMessage("removed the following word\\s\n" + msg); //exceptionally        
+        event.getChannel().sendMessage("Removed the following word\\s\n" + msg); //exceptionally        
       } 
     }
   }
