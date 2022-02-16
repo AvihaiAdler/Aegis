@@ -3,6 +3,8 @@ package bot.listeners;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -11,19 +13,42 @@ import bot.data.GuildEntity;
 
 public class SuspiciousWordsListener implements MessageCreateListener {
   private DBManager dbManager;
+  private DiscordApi discordApi;
   
-  public SuspiciousWordsListener(DBManager mongoClient) {
+  public SuspiciousWordsListener(DBManager mongoClient, DiscordApi discordApi) {
     this.dbManager = mongoClient;
+    this.discordApi = discordApi;
   }
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
-    if (event.isServerMessage() && !event.getMessageAuthor().isBotUser() && !event.getMessage().getEmbeds().isEmpty()) {
+    if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
+      if(event.getMessageAuthor().asUser().isPresent()) {
+        var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
+        var botHighestRole = event.getServer().get().getHighestRole(discordApi.getYourself()).get();
+        
+        // check if the user has higher role than the bot  
+        if(usrHighestRole.isPresent() && usrHighestRole.get().compareTo(botHighestRole) > 0) return;
+
+        //check if the user is the server owner
+        if(event.getServer().get().isOwner(event.getMessageAuthor().asUser().get())) return;
+      }
+
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      event.getMessage().getEmbeds().forEach(embed -> {
-        if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages())
-          event.deleteMessage();
-      });
+      
+      if(guild == null) return;
+      
+      // check embeds if there're any
+      if(!event.getMessage().getEmbeds().isEmpty()) {
+        event.getMessage().getEmbeds().forEach(embed -> {
+          if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages())
+            event.deleteMessage();
+        });        
+      }
+      
+      // check message content
+      var suspiciousContent = checkString(event.getMessageContent(), guild);
+      if(suspiciousContent && event.getChannel().canYouManageMessages()) event.deleteMessage();
     }
   }
   
@@ -42,6 +67,8 @@ public class SuspiciousWordsListener implements MessageCreateListener {
    * count the number of suspicious words in a string and compare it to the threshold
    */
   private boolean checkString(String str, GuildEntity guild) {
+    if(guild.getThreshold() == 0) return false;
+    
     List<Integer> scores = new ArrayList<>();
     Arrays.asList(convertUnicode(str).split("\\s+")).forEach(word -> {
       if(guild.getSuspiciousWords() != null && guild.getSuspiciousWords().contains(word))

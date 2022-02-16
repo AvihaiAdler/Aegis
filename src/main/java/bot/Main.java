@@ -12,6 +12,7 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
 import bot.listeners.BlockListener;
+import bot.listeners.MentionListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
 import bot.listeners.SpamListener;
@@ -25,6 +26,7 @@ import bot.util.ConfigManager;
 
 /*
  * TODO:
+ * add logging for each listener
  * db.guilds.drop()
  * command listener
  * bot mention listener
@@ -42,9 +44,8 @@ public class Main {
       // abort
     }
 
-    final DBManager dbManager;
-    dbManager = new DBManager(properties.getProperties().get("connectionString"), 
-            properties.getProperties().get("db"),
+    final DBManager dbManager = new DBManager(properties.getProperties().get("connectionString"),
+            properties.getProperties().get("db"), 
             properties.getProperties().get("collection"));
 
     var discordApi = new DiscordApiBuilder()
@@ -55,7 +56,6 @@ public class Main {
     // Setup commands listeners
     commands.put("restrict", new RestrictListener(dbManager, discordApi));
     commands.put("unrestrict", new UnrestrictListener(dbManager, discordApi));
-//    commands.put("server", null);
     commands.put("suspect", new SuspectListener(dbManager, discordApi));
     commands.put("unsuspect", new UnsuspectListener(dbManager, discordApi));
     commands.put("prefix", new PrefixListener(dbManager, discordApi));
@@ -69,25 +69,28 @@ public class Main {
       if (dbManager.findGuildById(serverId) != null) {
         dbManager.delete(serverId);
       }
-      System.out.println("left " + serverId);
+      System.out.println("left " + serverId); //log
     });
 
     // Server joined listener
     discordApi.addServerJoinListener(joinEvent -> {
       var serverId = joinEvent.getServer().getIdAsString();
       if (dbManager.findGuildById(serverId) == null) {
-        dbManager.insert(new GuildEntity(serverId));
+        dbManager.insert(new GuildEntity(serverId, joinEvent.getServer().getName()));
       }
-      System.out.println("joined " + dbManager.findGuildById(serverId));
+      System.out.println("joined " + dbManager.findGuildById(serverId));  //log
     });
     
     // Suspicious words Listener
-    var suspiciousWordsListener = new SuspiciousWordsListener(dbManager);
+    var suspiciousWordsListener = new SuspiciousWordsListener(dbManager, discordApi);
     discordApi.addMessageCreateListener(suspiciousWordsListener::onMessageCreate);
     
     // Spam listener
     var spamListener = new SpamListener(dbManager, discordApi);
     discordApi.addMessageCreateListener(spamListener::onMessageCreate);
+    
+    var mentionListener = new MentionListener(dbManager, discordApi);
+    discordApi.addMessageCreateListener(mentionListener::onMessageCreate);
     
     // Commands listeners
     discordApi.addMessageCreateListener(event -> {
@@ -97,15 +100,16 @@ public class Main {
         var guild = dbManager.findGuildById(serverId);
         
         if(guild == null) {
-          dbManager.insert(new GuildEntity(serverId));
+          dbManager.insert(new GuildEntity(serverId, event.getServer().get().getName()));
           return;
         }
+         
+        if(!event.getMessageContent().startsWith(guild.getPrefix())) return;
         
-        commands.keySet().forEach(key -> {
-          if(content.get(0).toLowerCase().equals(guild.getPrefix() + key)) {
-            commands.get(key).onMessageCreate(event);
-          }
-        });
+        var listener = commands.get(content.get(0).split(guild.getPrefix())[1]);
+        if(listener != null) {
+          listener.onMessageCreate(event);
+        }
       }
     });
   }

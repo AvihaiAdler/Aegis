@@ -1,7 +1,7 @@
 package bot.listeners;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -25,19 +25,20 @@ public class UnsuspectListener implements MessageCreateListener {
       
       // if the user has a lower role than the bot & isn't the server owner - return
       if(!usrHighestRole.isPresent() || 
-              (usrHighestRole.get().compareTo(botHighestRole) <= 0 && !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get()))) {
-        return;
-      }
+              (usrHighestRole.get().compareTo(botHighestRole) <= 0 &&
+              !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get()))) return;
+      
       if(event.getMessageContent().split("\\s+").length < 2) return;
 
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      var removedWords = new HashSet<String>();
+      var removedWords = new ArrayList<String>();
       
       Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
               .stream()
+              .filter(word -> !word.isBlank())
               .map(String::toLowerCase)
               .map(String::trim)
-              .forEach(word -> {
+              .forEach(word -> {             
                 if (guild.getSuspiciousWords().remove(word)) removedWords.add(word);
               });
       

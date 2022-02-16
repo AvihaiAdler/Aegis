@@ -1,23 +1,25 @@
 package bot.listeners;
 
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 
-public class ThresholdListener implements MessageCreateListener {
+public class MentionListener implements MessageCreateListener {
   private DBManager dbManager;
   private DiscordApi discordApi;
   
-  public ThresholdListener(DBManager dbManager, DiscordApi discordApi) {
+  public MentionListener(DBManager dbManager, DiscordApi discordApi) {
     this.dbManager = dbManager;
     this.discordApi = discordApi;
   }
-  
+
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+    if(event.getMessageAuthor().asUser().isPresent() && event.getMessage().getMentionedUsers().contains(discordApi.getYourself())) {
       var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
       var botHighestRole = event.getServer().get().getHighestRole(discordApi.getYourself()).get();
       
@@ -26,20 +28,15 @@ public class ThresholdListener implements MessageCreateListener {
               (usrHighestRole.get().compareTo(botHighestRole) <= 0 &&
               !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get()))) return;
 
-      if(event.getMessageContent().split("\\s+").length < 2) return;
-
+      
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      try {
-        var newThreshold = Integer.valueOf(event.getMessageContent().split("\\s+")[1]);
-        if(newThreshold >= 0) {
-          guild.setThreshold(newThreshold);
-          dbManager.update(guild);
-          
-          if(event.getChannel().canYouWrite()) event.getChannel().sendMessage("Threshold is now **" + guild.getThreshold() + "**");          
-        }
-      } catch (NumberFormatException e) {
-        //log
-      }
+      var embed = new EmbedBuilder()
+              .setTitle("Server: " + guild.getGuildName() + "\t" + guild.getId())
+              .addInlineField("Prefix", guild.getPrefix())
+              .addInlineField("Threshold", Integer.toString(guild.getThreshold()))
+              .addInlineField("Restricted", Boolean.toString(guild.getRestricted()));
+      
+      if(event.getChannel().canYouWrite()) event.getChannel().sendMessage(embed).exceptionally(ExceptionLogger.get());
     }
   }
 }

@@ -28,9 +28,8 @@ public class UnrestrictListener implements MessageCreateListener {
       
       // if the user has a lower role than the bot & isn't the server owner - return
       if(!usrHighestRole.isPresent() || 
-              (usrHighestRole.get().compareTo(botHighestRole) <= 0 && !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get()))) {
-        return;
-      }
+              (usrHighestRole.get().compareTo(botHighestRole) <= 0 &&
+              !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get()))) return;
       
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       if(guild.getRestricted()) {

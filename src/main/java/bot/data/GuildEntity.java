@@ -8,7 +8,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
 
 public class GuildEntity {
   private String id;
-  private String guildId;
+  private String guildName;
   private String prefix;
   private boolean restricted;
   private int threshold;
@@ -19,8 +19,9 @@ public class GuildEntity {
     
   }
   
-  public GuildEntity(String id) {
-    this.id = guildId = id; 
+  public GuildEntity(String id, String guildName) {
+    this.id = id;
+    this.guildName = guildName; 
     prefix = "!";
     threshold = 0;
     restricted = false;
@@ -45,12 +46,12 @@ public class GuildEntity {
     this.suspiciousWords = suspiciousWords;
   }
 
-  public String getGuildId() {
-    return guildId;
+  public String getGuildName() {
+    return guildName;
   }
 
-  public void setGuildId(String guildId) {
-    this.guildId = guildId;
+  public void setGuildName(String guildName) {
+    this.guildName = guildName;
   }
 
   public String getPrefix() {
@@ -87,7 +88,7 @@ public class GuildEntity {
 
   @Override
   public int hashCode() {
-    return Objects.hash(guildId);
+    return Objects.hash(id);
   }
 
   @Override
@@ -99,12 +100,12 @@ public class GuildEntity {
     if (getClass() != obj.getClass())
       return false;
     GuildEntity other = (GuildEntity) obj;
-    return Objects.equals(guildId, other.guildId);
+    return Objects.equals(id, other.id);
   }
 
   @Override
   public String toString() {
-    return "GuildEntity [id=" + id + ", guildId=" + guildId + ", prefix=" + prefix + ", restricted=" + restricted
+    return "GuildEntity [id=" + id + ", guild name=" + guildName + ", prefix=" + prefix + ", restricted=" + restricted
             + ", threshold=" + threshold + ", suspiciousWords=" + suspiciousWords + ", blockedUrls=" + blockedUrls
             + "]";
   }
