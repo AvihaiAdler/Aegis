@@ -11,12 +11,14 @@ import org.javacord.api.listener.message.MessageCreateListener;
 
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
+import bot.listeners.BlockListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
 import bot.listeners.SpamListener;
 import bot.listeners.SuspectListener;
 import bot.listeners.SuspiciousWordsListener;
 import bot.listeners.ThresholdListener;
+import bot.listeners.UnblockedListener;
 import bot.listeners.UnrestrictListener;
 import bot.listeners.UnsuspectListener;
 import bot.util.ConfigManager;
@@ -54,12 +56,12 @@ public class Main {
     // Setup commands listeners
     commands.put("restrict", new RestrictListener(dbManager, discordApi));
     commands.put("unrestrict", new UnrestrictListener(dbManager, discordApi));
-    commands.put("server", null);
+//    commands.put("server", null);
     commands.put("suspect", new SuspectListener(dbManager, discordApi));
     commands.put("unsuspect", new UnsuspectListener(dbManager, discordApi));
     commands.put("prefix", new PrefixListener(dbManager, discordApi));
-    commands.put("block", null);
-    commands.put("unblock", null);
+    commands.put("block", new BlockListener(dbManager, discordApi));
+    commands.put("unblock", new UnblockedListener(dbManager, discordApi));
     commands.put("threshold", new ThresholdListener(dbManager, discordApi));
     
     // Server leave listener

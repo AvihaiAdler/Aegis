@@ -39,7 +39,7 @@ public class SpamListener implements MessageCreateListener {
       
       // if the guild is 'restricted' 
       if (guild.getRestricted() && event.getMessage().mentionsEveryone()) {
-        if(!event.getMessage().getEmbeds().isEmpty() || containsUrl(event.getMessageContent())) {
+        if(!event.getMessage().getEmbeds().isEmpty() || containsUrl(event.getMessageContent()) && event.getChannel().canYouManageMessages()) {
           event.deleteMessage();
         }
       }

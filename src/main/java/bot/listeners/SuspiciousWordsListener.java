@@ -21,7 +21,7 @@ public class SuspiciousWordsListener implements MessageCreateListener {
     if (event.isServerMessage() && !event.getMessageAuthor().isBotUser() && !event.getMessage().getEmbeds().isEmpty()) {
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       event.getMessage().getEmbeds().forEach(embed -> {
-        if (isSuspicious(embed, guild))
+        if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages())
           event.deleteMessage();
       });
     }
