@@ -23,14 +23,15 @@ public class SpamListener implements MessageCreateListener {
         return;
 
       if(event.getMessageAuthor().asUser().isPresent()) {
-        var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
-        var botHighestRole = event.getServer().get().getHighestRole(discordApi.getYourself()).get();
-        
-        // check if the user has higher role than the bot  
-        if(usrHighestRole.isPresent() && usrHighestRole.get().compareTo(botHighestRole) > 0) return;
-
-        //check if the user is the server owner
-        if(event.getServer().get().isOwner(event.getMessageAuthor().asUser().get())) return;
+//        var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
+//        var botHighestRole = event.getServer().get().getHighestRole(discordApi.getYourself()).get();
+//        
+//        // check if the user has higher role than the bot  
+//        if(usrHighestRole.isPresent() && usrHighestRole.get().compareTo(botHighestRole) > 0) return;
+//
+//        //check if the user is the server owner
+//        if(event.getServer().get().isOwner(event.getMessageAuthor().asUser().get())) return;
+        if(Misc.isAllowed(event, discordApi)) return;
       }
       
       // if the guild is 'restricted' 

@@ -7,6 +7,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 
 import bot.dal.DBManager;
+import bot.util.Misc;
 
 public class UnsuspectListener implements MessageCreateListener {
   private DBManager dbManager;
@@ -20,13 +21,7 @@ public class UnsuspectListener implements MessageCreateListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent()) {
-      var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
-      var botHighestRole = event.getServer().get().getHighestRole(discordApi.getYourself()).get();
-      
-      // if the user has a lower role than the bot & isn't the server owner - return
-      if(!usrHighestRole.isPresent() || 
-              (usrHighestRole.get().compareTo(botHighestRole) <= 0 &&
-              !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get()))) return;
+      if(!Misc.isAllowed(event, discordApi)) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
 
