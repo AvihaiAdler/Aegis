@@ -7,8 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -20,18 +18,16 @@ import bot.util.Misc;
 
 public class SuspiciousWordsListener implements MessageCreateListener {
   private DBManager dbManager;
-  private DiscordApi discordApi;
   
-  public SuspiciousWordsListener(DBManager mongoClient, DiscordApi discordApi) {
+  public SuspiciousWordsListener(DBManager mongoClient) {
     this.dbManager = mongoClient;
-    this.discordApi = discordApi;
   }
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
       if(event.getMessageAuthor().asUser().isPresent()) {
-        if(Misc.isAllowed(event, discordApi)) return;
+        if(Misc.isAllowed(event, event.getApi())) return;
       }
 
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
@@ -54,12 +50,16 @@ public class SuspiciousWordsListener implements MessageCreateListener {
         // log to the log channel
         var logChannelId = guild.getLogChannelId();
         if(logChannelId == null) return;
-        if(Misc.channelExists(logChannelId, event) && Misc.canLog(logChannelId, event)) {
+        if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
           var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
           event.getServer().get()
             .getChannelById(logChannelId).get()
             .asServerTextChannel().get()
-            .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now) + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `(" + event.getMessageAuthor().getIdAsString() + ")` was deleted by **" + discordApi.getYourself().getDiscriminatedName() + "**. Reason: ```possible spam```");
+                  .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+                          + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
+                          + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
+                          + event.getApi().getYourself().getDiscriminatedName()
+                          + "**. Reason: ```suspicious words were detected```");
         }
       }
     }

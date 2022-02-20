@@ -2,7 +2,6 @@ package bot.listeners;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -16,17 +15,15 @@ import bot.util.Misc;
  */
 public class SuspectListener implements MessageCreateListener {
   private DBManager dbManager;
-  private DiscordApi discordApi;
   
-  public SuspectListener(DBManager dbManager, DiscordApi discordApi) {
+  public SuspectListener(DBManager dbManager) {
     this.dbManager = dbManager;
-    this.discordApi = discordApi;
   }
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent()) {
-      if(!Misc.isAllowed(event, discordApi)) return;
+      if(!Misc.isAllowed(event, event.getApi())) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
 

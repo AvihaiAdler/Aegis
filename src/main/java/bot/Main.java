@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -46,15 +47,10 @@ public class Main {
     }
 
     final DBManager dbManager = new DBManager();
-    
-    try {
-      dbManager.initConnection(properties.getProperties().get("connectionString"),
-            properties.getProperties().get("db"), 
+
+    dbManager.initConnection(properties.getProperties().get("connectionString"), 
+            properties.getProperties().get("db"),
             properties.getProperties().get("collection"));
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(2);
-    }
     
     var discordApi = new DiscordApiBuilder()
             .setToken(properties.getProperties().get("token"))
@@ -68,18 +64,18 @@ public class Main {
             .join();
     
     discordApi.setMessageCacheSize(30, 60*10); //store only 30 messages per channel for 10 minutes
-    discordApi.updateActivity("Reading messages");
+    discordApi.updateActivity(ActivityType.WATCHING, "messages");
     
-    // Setup commands listeners
-    commands.put("restrict", new RestrictListener(dbManager, discordApi));
-    commands.put("unrestrict", new UnrestrictListener(dbManager, discordApi));
-    commands.put("suspect", new SuspectListener(dbManager, discordApi));
-    commands.put("unsuspect", new UnsuspectListener(dbManager, discordApi));
-    commands.put("prefix", new PrefixListener(dbManager, discordApi));
-    commands.put("block", new BlockListener(dbManager, discordApi));
-    commands.put("unblock", new UnblockedListener(dbManager, discordApi));
-    commands.put("threshold", new ThresholdListener(dbManager, discordApi));
-    commands.put("logto", new UpdateLogChannelListener(dbManager, discordApi));
+    // Commands listeners
+    commands.put("restrict", new RestrictListener(dbManager));
+    commands.put("unrestrict", new UnrestrictListener(dbManager));
+    commands.put("suspect", new SuspectListener(dbManager));
+    commands.put("unsuspect", new UnsuspectListener(dbManager));
+    commands.put("prefix", new PrefixListener(dbManager));
+    commands.put("block", new BlockListener(dbManager));
+    commands.put("unblock", new UnblockedListener(dbManager));
+    commands.put("threshold", new ThresholdListener(dbManager));
+    commands.put("logto", new UpdateLogChannelListener(dbManager));
     
     // Server leave listener
     discordApi.addServerLeaveListener(leaveEvent -> {
@@ -96,7 +92,7 @@ public class Main {
       if (dbManager.findGuildById(serverId) == null) {
         ServerTextChannel channel = null;
         if(joinEvent.getServer().canYouCreateChannels()) {
-          channel = joinEvent.getServer().createTextChannelBuilder().setName("anti-spam-log").create().join();
+          channel = joinEvent.getServer().createTextChannelBuilder().setName(discordApi.getYourself() + "-log").create().join();
         }
         dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(), channel == null ? null : channel.getIdAsString()));
       }
@@ -104,14 +100,14 @@ public class Main {
     });
     
     // Suspicious words Listener
-    var suspiciousWordsListener = new SuspiciousWordsListener(dbManager, discordApi);
+    var suspiciousWordsListener = new SuspiciousWordsListener(dbManager);
     discordApi.addMessageCreateListener(suspiciousWordsListener::onMessageCreate);
     
     // Spam listener
-    var spamListener = new SpamListener(dbManager, discordApi);
+    var spamListener = new SpamListener(dbManager);
     discordApi.addMessageCreateListener(spamListener::onMessageCreate);
     
-    var mentionListener = new MentionListener(dbManager, discordApi);
+    var mentionListener = new MentionListener(dbManager);
     discordApi.addMessageCreateListener(mentionListener::onMessageCreate);
     
     // Commands listeners

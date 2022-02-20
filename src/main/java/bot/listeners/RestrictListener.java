@@ -1,6 +1,5 @@
 package bot.listeners;
 
-import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -8,24 +7,17 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import bot.dal.DBManager;
 import bot.util.Misc;
 
-/*
- * TODO:
- * exceptionally if needed
- */
-
 public class RestrictListener implements MessageCreateListener {
   private DBManager dbManager;
-  private DiscordApi discordApi;
   
-  public RestrictListener(DBManager dbManager, DiscordApi discordApi) {
+  public RestrictListener(DBManager dbManager) {
     this.dbManager = dbManager;
-    this.discordApi = discordApi;
   }
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent()) {
-      if(!Misc.isAllowed(event, discordApi)) return;
+      if(!Misc.isAllowed(event, event.getApi())) return;
       
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       if(!guild.getRestricted()) {

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.PermissionType;
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 import bot.data.GuildEntity;
@@ -40,9 +41,8 @@ public class Misc {
     return true;
   }
   
-  public static boolean channelExists(String channelId, MessageCreateEvent event) {
-    var channelsId = event.getServer()
-            .get()
+  public static boolean channelExists(String channelId, Server server) {
+    var channelsId = server
             .getChannels()
             .stream()
             .map(channel -> channel.getIdAsString())
@@ -60,14 +60,21 @@ public class Misc {
     return true;
   }
   
-  public static List<EmbedBuilder> getInfo(GuildEntity guild) {
+  public static List<EmbedBuilder> getInfo(GuildEntity guild, Server server) {
     var info = new ArrayList<EmbedBuilder>();
     
     var embed = new EmbedBuilder()
-            .setTitle("Server: " + guild.getId())
+            .setTitle("Info")
+            .addInlineField("Server", guild.getId())
+            .addInlineField("Name", server.getName())
             .addField("Prefix", guild.getPrefix())
             .addField("Threshold", Integer.toString(guild.getThreshold()))
             .addField("Restricted", guild.getRestricted() ? "Yes" : "No");
+    
+    if(guild.getLogChannelId() != null && channelExists(guild.getLogChannelId(), server)) {
+      embed.addInlineField("Logging channel", guild.getLogChannelId());
+      embed.addInlineField("Name", server.getChannelById(guild.getLogChannelId()).get().getName());        
+    }
     
     info.add(embed);
     

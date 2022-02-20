@@ -1,6 +1,5 @@
 package bot.listeners;
 
-import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -10,17 +9,15 @@ import bot.util.Misc;
 
 public class PrefixListener implements MessageCreateListener {
   private DBManager dbManager;
-  private DiscordApi discordApi;
   
-  public PrefixListener(DBManager dbManager, DiscordApi discordApi) {
+  public PrefixListener(DBManager dbManager) {
     this.dbManager = dbManager;
-    this.discordApi = discordApi;
   }
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent()) {
-      if(!Misc.isAllowed(event, discordApi)) return;
+      if(!Misc.isAllowed(event, event.getApi())) return;
       
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       var splitted = event.getMessageContent().split(" ");
