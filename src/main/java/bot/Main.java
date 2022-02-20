@@ -5,10 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.ServerTextChannel;
+import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.listener.message.MessageCreateListener;
-
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
 import bot.listeners.BlockListener;
@@ -22,14 +22,12 @@ import bot.listeners.ThresholdListener;
 import bot.listeners.UnblockedListener;
 import bot.listeners.UnrestrictListener;
 import bot.listeners.UnsuspectListener;
+import bot.listeners.UpdateLogChannelListener;
 import bot.util.ConfigManager;
 
 /*
  * TODO:
  * add logging for each listener
- * db.guilds.drop()
- * command listener
- * bot mention listener
  */
 
 public class Main {
@@ -41,17 +39,36 @@ public class Main {
       properties.populate();
     } catch (IOException e) {
       // log
-      // abort
+      System.exit(1);
+    } catch (NullPointerException ne) {
+      //log
+      System.exit(1);
     }
 
-    final DBManager dbManager = new DBManager(properties.getProperties().get("connectionString"),
+    final DBManager dbManager = new DBManager();
+    
+    try {
+      dbManager.initConnection(properties.getProperties().get("connectionString"),
             properties.getProperties().get("db"), 
             properties.getProperties().get("collection"));
-
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(2);
+    }
+    
     var discordApi = new DiscordApiBuilder()
             .setToken(properties.getProperties().get("token"))
+            .setAllNonPrivilegedIntentsExcept(Intent.DIRECT_MESSAGES, 
+                    Intent.DIRECT_MESSAGE_TYPING, 
+                    Intent.DIRECT_MESSAGE_REACTIONS,
+                    Intent.GUILD_INVITES,
+                    Intent.GUILD_WEBHOOKS,
+                    Intent.GUILD_MESSAGE_TYPING)
             .login()
             .join();
+    
+    discordApi.setMessageCacheSize(30, 60*10); //store only 30 messages per channel for 10 minutes
+    discordApi.updateActivity("Reading messages");
     
     // Setup commands listeners
     commands.put("restrict", new RestrictListener(dbManager, discordApi));
@@ -62,6 +79,7 @@ public class Main {
     commands.put("block", new BlockListener(dbManager, discordApi));
     commands.put("unblock", new UnblockedListener(dbManager, discordApi));
     commands.put("threshold", new ThresholdListener(dbManager, discordApi));
+    commands.put("logto", new UpdateLogChannelListener(dbManager, discordApi));
     
     // Server leave listener
     discordApi.addServerLeaveListener(leaveEvent -> {
@@ -76,7 +94,11 @@ public class Main {
     discordApi.addServerJoinListener(joinEvent -> {
       var serverId = joinEvent.getServer().getIdAsString();
       if (dbManager.findGuildById(serverId) == null) {
-        dbManager.insert(new GuildEntity(serverId, joinEvent.getServer().getName()));
+        ServerTextChannel channel = null;
+        if(joinEvent.getServer().canYouCreateChannels()) {
+          channel = joinEvent.getServer().createTextChannelBuilder().setName("anti-spam-log").create().join();
+        }
+        dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(), channel == null ? null : channel.getIdAsString()));
       }
       System.out.println("joined " + dbManager.findGuildById(serverId));  //log
     });
@@ -100,7 +122,7 @@ public class Main {
         var guild = dbManager.findGuildById(serverId);
         
         if(guild == null) {
-          dbManager.insert(new GuildEntity(serverId, event.getServer().get().getName()));
+          dbManager.upsert(new GuildEntity(serverId, event.getServer().get().getName(), null));
           return;
         }
          

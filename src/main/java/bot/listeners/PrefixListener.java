@@ -3,6 +3,7 @@ package bot.listeners;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 import bot.util.Misc;
@@ -25,10 +26,10 @@ public class PrefixListener implements MessageCreateListener {
       var splitted = event.getMessageContent().split(" ");
       if(splitted.length >= 2) {
         guild.setPrefix(splitted[1]);
-        dbManager.update(guild);
+        dbManager.upsert(guild);
         
         if(event.getChannel().canYouWrite()) {
-          event.getChannel().sendMessage("prefix is now **" + guild.getPrefix() + "**");
+          event.getChannel().sendMessage("Prefix has been changed to **" + guild.getPrefix() + "**").exceptionally(ExceptionLogger.get());
         }
       }
     }

@@ -29,7 +29,7 @@ public class ConfigManager {
     this.properties = properties;
   }
   
-  public void populate() throws IOException {
+  public void populate() throws IOException, NullPointerException {
     var inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
     var configValues = new Properties();
     configValues.load(inputStream);

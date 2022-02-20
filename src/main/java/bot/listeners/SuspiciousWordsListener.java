@@ -1,5 +1,9 @@
 package bot.listeners;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,6 +12,8 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
+
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
 import bot.util.Misc;
@@ -36,13 +42,26 @@ public class SuspiciousWordsListener implements MessageCreateListener {
       if(!event.getMessage().getEmbeds().isEmpty()) {
         event.getMessage().getEmbeds().forEach(embed -> {
           if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages())
-            event.deleteMessage();
+            event.deleteMessage().exceptionally(ExceptionLogger.get());
         });        
       }
       
       // check message content
       var suspiciousContent = checkString(event.getMessageContent(), guild);
-      if(suspiciousContent && event.getChannel().canYouManageMessages()) event.deleteMessage();
+      if(suspiciousContent && event.getChannel().canYouManageMessages()) {
+        event.deleteMessage().exceptionally(ExceptionLogger.get());
+        
+        // log to the log channel
+        var logChannelId = guild.getLogChannelId();
+        if(logChannelId == null) return;
+        if(Misc.channelExists(logChannelId, event) && Misc.canLog(logChannelId, event)) {
+          var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
+          event.getServer().get()
+            .getChannelById(logChannelId).get()
+            .asServerTextChannel().get()
+            .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now) + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `(" + event.getMessageAuthor().getIdAsString() + ")` was deleted by **" + discordApi.getYourself().getDiscriminatedName() + "**. Reason: ```possible spam```");
+        }
+      }
     }
   }
   

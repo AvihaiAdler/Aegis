@@ -3,6 +3,7 @@ package bot.listeners;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 import bot.util.Misc;
@@ -28,9 +29,13 @@ public class ThresholdListener implements MessageCreateListener {
         var newThreshold = Integer.valueOf(event.getMessageContent().split("\\s+")[1]);
         if(newThreshold >= 0) {
           guild.setThreshold(newThreshold);
-          dbManager.update(guild);
+          dbManager.upsert(guild);
           
-          if(event.getChannel().canYouWrite()) event.getChannel().sendMessage("Threshold is now **" + guild.getThreshold() + "**");          
+          if(event.getChannel().canYouWrite()) {
+            event.getChannel()
+              .sendMessage("Threshold is now **" + guild.getThreshold() + "**")
+              .exceptionally(ExceptionLogger.get());          
+          }
         }
       } catch (NumberFormatException e) {
         //log

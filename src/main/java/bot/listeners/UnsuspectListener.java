@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 import bot.util.Misc;
@@ -37,13 +38,15 @@ public class UnsuspectListener implements MessageCreateListener {
                 if (guild.getSuspiciousWords().remove(word)) removedWords.add(word);
               });
       
-      dbManager.update(guild);
+      dbManager.upsert(guild);
       
       if(removedWords.size() > 0 && event.getChannel().canYouWrite()) {
         StringBuilder msg = new StringBuilder();
         removedWords.forEach(word -> msg.append("**" + word + "**, "));
         msg.deleteCharAt(msg.lastIndexOf(","));
-        event.getChannel().sendMessage("Removed the following word\\s\n" + msg); //exceptionally        
+        event.getChannel()
+          .sendMessage("Removed the following word\\s from the list:\n" + msg)
+          .exceptionally(ExceptionLogger.get());       
       } 
     }
   }

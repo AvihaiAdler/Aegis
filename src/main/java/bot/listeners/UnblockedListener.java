@@ -5,6 +5,7 @@ import java.util.HashSet;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 import bot.util.Misc;
@@ -37,12 +38,14 @@ public class UnblockedListener implements MessageCreateListener {
               });
       
       if(event.getChannel().canYouManageMessages()) event.deleteMessage();
-      dbManager.update(guild);
+      dbManager.upsert(guild);
       
       if(unblockedUrls.size() > 0 && event.getChannel().canYouWrite()) {
         StringBuilder msg = new StringBuilder();
         unblockedUrls.forEach(url -> msg.append("- `" + url + "`\n"));
-        event.getChannel().sendMessage("Removed the following URL\\s from the block list:\n" + msg); //exceptionally        
+        event.getChannel()
+          .sendMessage("Removed the following URL\\s from the list:\n" + msg)
+          .exceptionally(ExceptionLogger.get());       
       } 
     }
   }

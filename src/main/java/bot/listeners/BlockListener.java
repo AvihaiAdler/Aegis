@@ -5,6 +5,7 @@ import java.util.HashSet;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 import bot.util.Misc;
@@ -44,12 +45,12 @@ public class BlockListener implements MessageCreateListener {
               });
       
       if(event.getChannel().canYouManageMessages()) event.deleteMessage();
-      dbManager.update(guild);
+      dbManager.upsert(guild);
       
       if(blockedUrls.size() > 0 && event.getChannel().canYouWrite()) {
         StringBuilder msg = new StringBuilder();
         blockedUrls.forEach(url -> msg.append("- `" + url + "`\n"));
-        event.getChannel().sendMessage("Added the following URL\\s to the block list:\n" + msg); //exceptionally        
+        event.getChannel().sendMessage("The following URL\\s have been added to the list:\n" + msg).exceptionally(ExceptionLogger.get());       
       } 
     }
   }

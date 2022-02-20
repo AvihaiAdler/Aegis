@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 import bot.data.GuildEntity;
@@ -25,17 +26,36 @@ public class Misc {
   
   public static boolean isAllowed(MessageCreateEvent event, DiscordApi discordApi) {
     var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
-    var botHighestRole = event.getServer().get().getHighestRole(discordApi.getYourself()).get();
     
     // user has no role
     if(!usrHighestRole.isPresent()) {
       return false;
     }
     
-    // user highest role is lower than the bot && use isn't the server owner
-    if(usrHighestRole.get().compareTo(botHighestRole) <= 0 && !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get())) {
+    // if the user isn't the server owner and isn't an ADMINISTRATOR
+    if(!usrHighestRole.get().getAllowedPermissions().contains(PermissionType.ADMINISTRATOR) && !event.getServer().get().isOwner(event.getMessageAuthor().asUser().get())) {
       return false;
     }
+
+    return true;
+  }
+  
+  public static boolean channelExists(String channelId, MessageCreateEvent event) {
+    var channelsId = event.getServer()
+            .get()
+            .getChannels()
+            .stream()
+            .map(channel -> channel.getIdAsString())
+            .collect(Collectors.toList());
+    if(channelsId.contains(channelId)) return true;
+    return false;
+  }
+  
+  public static boolean canLog(String channelId, MessageCreateEvent event) {
+    if(event.getServer().get().getChannelById(channelId).isEmpty()) return false;
+    if(!event.getServer().get().getChannelById(channelId).get().canYouSee()) return false;
+    if(event.getServer().get().getChannelById(channelId).get().asTextChannel().isEmpty()) return false;
+    if(!event.getServer().get().getChannelById(channelId).get().asTextChannel().get().canYouWrite()) return false;
 
     return true;
   }
@@ -53,6 +73,7 @@ public class Misc {
     
     suspiciousWords(guild).forEach(str -> info.add(new EmbedBuilder().setTitle("Suspicious words:").setDescription(str)));
     blockedUrls(guild).forEach(urls -> info.add(new EmbedBuilder().setTitle("Blocked urls:").setDescription(urls)));
+    
     return info;
   }
   

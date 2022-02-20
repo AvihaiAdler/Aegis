@@ -2,7 +2,6 @@ package bot.dal;
 
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -22,27 +21,34 @@ public class DBManager {
   private MongoDatabase mongodb;
   private MongoCollection<GuildEntity> mongoCollection;
   
-  public DBManager(String connectionString, String dbName, String collectionName) throws Exception {
+  public DBManager() {
     pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
     codecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
+  }
+  
+  public void initConnection (String connectionString, String dbName, String collectionName) throws Exception {
     mongoClient = MongoClients.create(connectionString);
     mongodb = mongoClient.getDatabase(dbName).withCodecRegistry(codecRegistry);
     mongoCollection = mongodb.getCollection(collectionName, GuildEntity.class);
   }
   
-  public synchronized void insert(GuildEntity entity) {
-    mongoCollection.insertOne(entity);
+//  public synchronized void insert(GuildEntity entity) {
+//    mongoCollection.insertOne(entity);
+//  }
+  
+  public void upsert(GuildEntity entity) {
+    if(findGuildById(entity.getId()) == null) {
+      mongoCollection.insertOne(entity);
+    } else {
+      mongoCollection.replaceOne(Filters.eq("_id", entity.getId()), entity);      
+    }
   }
   
-  public synchronized void update(GuildEntity entity) {
-    mongoCollection.replaceOne(Filters.eq("_id", entity.getId()), entity);
-  }
-  
-  public synchronized GuildEntity findGuildById(String id) {
+  public GuildEntity findGuildById(String id) {
     return mongoCollection.find(Filters.eq("_id", id)).first();
   }
   
-  public synchronized void delete(String id) {
+  public void delete(String id) {
     mongoCollection.deleteOne(Filters.eq("_id", id));
   }
 }

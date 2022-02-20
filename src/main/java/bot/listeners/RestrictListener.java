@@ -3,6 +3,7 @@ package bot.listeners;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 import bot.util.Misc;
@@ -29,9 +30,9 @@ public class RestrictListener implements MessageCreateListener {
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       if(!guild.getRestricted()) {
         guild.setRestricted(true);
-        dbManager.update(guild);
+        dbManager.upsert(guild);
         if(event.getChannel().canYouWrite()) {
-          event.getChannel().sendMessage("the server is now in restrict mode"); //exceptionally        
+          event.getChannel().sendMessage("The server is now in restrict mode").exceptionally(ExceptionLogger.get());        
         }
       }      
     }

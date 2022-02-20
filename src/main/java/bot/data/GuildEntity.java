@@ -8,6 +8,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
 
 public class GuildEntity {
   private String id;
+  private String logChannelId;
   private String guildName;
   private String prefix;
   private boolean restricted;
@@ -19,9 +20,10 @@ public class GuildEntity {
     
   }
   
-  public GuildEntity(String id, String guildName) {
+  public GuildEntity(String id, String guildName, String logChannelId) {
     this.id = id;
     this.guildName = guildName; 
+    this.logChannelId = logChannelId;
     prefix = "!";
     threshold = 0;
     restricted = false;
@@ -36,6 +38,14 @@ public class GuildEntity {
   @BsonId
   public void setId(String id) {
     this.id = id;
+  }
+    
+  public String getLogChannelId() {
+    return logChannelId;
+  }
+
+  public void setLogChannelId(String logChannelId) {
+    this.logChannelId = logChannelId;
   }
 
   public Set<String> getSuspiciousWords() {
@@ -105,7 +115,7 @@ public class GuildEntity {
 
   @Override
   public String toString() {
-    return "GuildEntity [id=" + id + ", guild name=" + guildName + ", prefix=" + prefix + ", restricted=" + restricted
+    return "GuildEntity [id=" + id + ", logChannelId=" + logChannelId + ", guildName=" + guildName + ", prefix=" + prefix + ", restricted=" + restricted
             + ", threshold=" + threshold + ", suspiciousWords=" + suspiciousWords + ", blockedUrls=" + blockedUrls
             + "]";
   }

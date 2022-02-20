@@ -9,6 +9,10 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import bot.dal.DBManager;
 import bot.util.Misc;
 
+/*
+ * TODO
+ * itr doesnt work properly
+ */
 public class MentionListener implements MessageCreateListener {
   private DBManager dbManager;
   private DiscordApi discordApi;
@@ -36,7 +40,7 @@ public class MentionListener implements MessageCreateListener {
           msg.addReactionAddListener(reactionEvent -> {
             if (reactionEvent.getEmoji().equalsEmoji("◀️")) {
 
-              // if no user/myself - bail
+              // if myself - bail
               if (reactionEvent.getUser().isPresent() && reactionEvent.getUser().get().isYourself())
                 return;
 
@@ -51,7 +55,7 @@ public class MentionListener implements MessageCreateListener {
               
             } else if (reactionEvent.getEmoji().equalsEmoji("▶️")) {
 
-              // if no user/myself - bail
+              // if myself - bail
               if (reactionEvent.getUser().isPresent() && reactionEvent.getUser().get().isYourself())
                 return;
 
@@ -59,7 +63,7 @@ public class MentionListener implements MessageCreateListener {
                 reactionEvent.removeReaction().exceptionally(ExceptionLogger.get());
                 return;
               }
-
+ 
               reactionEvent.editMessage(itr.next())
                       .thenCompose(message -> reactionEvent.removeReaction())
                       .exceptionally(ExceptionLogger.get());
