@@ -2,6 +2,9 @@ package bot.listeners;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -9,6 +12,7 @@ import bot.dal.DBManager;
 import bot.util.Misc;
 
 public class UnsuspectListener implements MessageCreateListener {
+  private final Logger logger = LogManager.getLogger(UnsuspectListener.class);
   private DBManager dbManager;
   
   public UnsuspectListener(DBManager dbManager) {
@@ -18,12 +22,14 @@ public class UnsuspectListener implements MessageCreateListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent()) {
-      if(!Misc.isAllowed(event, event.getApi())) return;
+      if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
 
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       var removedWords = new ArrayList<String>();
+      
+      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
       Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
               .stream()
@@ -36,13 +42,18 @@ public class UnsuspectListener implements MessageCreateListener {
       
       dbManager.upsert(guild);
       
-      if(removedWords.size() > 0 && event.getChannel().canYouWrite()) {
+      if(removedWords.size() > 0) {
         StringBuilder msg = new StringBuilder();
         removedWords.forEach(word -> msg.append("**" + word + "**, "));
         msg.deleteCharAt(msg.lastIndexOf(","));
-        event.getChannel()
-          .sendMessage("Removed the following word\\s from the list:\n" + msg)
-          .exceptionally(ExceptionLogger.get());       
+        
+        logger.info("the server " + guild.getId() + "removed the following words from their suspicious word list:\n" + msg);
+        
+        if(event.getChannel().canYouWrite()) {
+          event.getChannel()
+            .sendMessage("Removed the following word\\s from the list:\n" + msg)
+            .exceptionally(ExceptionLogger.get());                 
+        }
       } 
     }
   }

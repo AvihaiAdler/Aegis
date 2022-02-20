@@ -4,6 +4,9 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -12,6 +15,7 @@ import bot.dal.DBManager;
 import bot.util.Misc;
 
 public class SpamListener implements MessageCreateListener {
+  private final Logger logger = LogManager.getLogger(SpamListener.class);
   private DBManager dbManager;
   
   public SpamListener(DBManager mongoClient) {
@@ -26,13 +30,15 @@ public class SpamListener implements MessageCreateListener {
         return;
 
       if(event.getMessageAuthor().asUser().isPresent()) {
-        if(Misc.isAllowed(event, event.getApi())) return;
+        if(Misc.isUserAllowed(event, event.getApi())) return;
       }
       
       // if the guild is 'restricted' 
       if (guild.getRestricted() && event.getMessage().mentionsEveryone()) {
         if(!event.getMessage().getEmbeds().isEmpty() || Misc.containsUrl(event.getMessageContent()) && event.getChannel().canYouManageMessages()) {
           event.deleteMessage().exceptionally(ExceptionLogger.get());
+          
+          logger.info("detected spam message for server " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
           
           // log to the log channel
           var logChannelId = guild.getLogChannelId();

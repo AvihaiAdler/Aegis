@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -17,6 +20,7 @@ import bot.data.GuildEntity;
 import bot.util.Misc;
 
 public class SuspiciousWordsListener implements MessageCreateListener {
+  private final Logger logger = LogManager.getLogger(SuspiciousWordsListener.class);
   private DBManager dbManager;
   
   public SuspiciousWordsListener(DBManager mongoClient) {
@@ -27,18 +31,22 @@ public class SuspiciousWordsListener implements MessageCreateListener {
   public void onMessageCreate(MessageCreateEvent event) {
     if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
       if(event.getMessageAuthor().asUser().isPresent()) {
-        if(Misc.isAllowed(event, event.getApi())) return;
+        if(Misc.isUserAllowed(event, event.getApi())) return;
       }
 
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       
       if(guild == null) return;
       
+      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
+      
       // check embeds if there're any
       if(!event.getMessage().getEmbeds().isEmpty()) {
         event.getMessage().getEmbeds().forEach(embed -> {
           if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages())
             event.deleteMessage().exceptionally(ExceptionLogger.get());
+            log(guild, event);
+            return;
         });        
       }
       
@@ -46,22 +54,28 @@ public class SuspiciousWordsListener implements MessageCreateListener {
       var suspiciousContent = checkString(event.getMessageContent(), guild);
       if(suspiciousContent && event.getChannel().canYouManageMessages()) {
         event.deleteMessage().exceptionally(ExceptionLogger.get());
-        
-        // log to the log channel
-        var logChannelId = guild.getLogChannelId();
-        if(logChannelId == null) return;
-        if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
-          var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
-          event.getServer().get()
-            .getChannelById(logChannelId).get()
-            .asServerTextChannel().get()
-                  .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
-                          + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
-                          + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
-                          + event.getApi().getYourself().getDiscriminatedName()
-                          + "**. Reason: ```suspicious words were detected```");
-        }
+        log(guild, event);
+        return;
       }
+    }
+  }
+  
+  private void log(GuildEntity guild, MessageCreateEvent event) {
+    logger.info("detedted some suspicious words for " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
+    
+    // log to the log channel
+    var logChannelId = guild.getLogChannelId();
+    if(logChannelId == null) return;
+    if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
+      var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
+      event.getServer().get()
+        .getChannelById(logChannelId).get()
+        .asServerTextChannel().get()
+              .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+                      + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
+                      + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
+                      + event.getApi().getYourself().getDiscriminatedName()
+                      + "**. Reason: ```suspicious words were detected```");
     }
   }
   

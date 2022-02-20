@@ -14,7 +14,11 @@ import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class DBManager {
+  private final Logger logger = LogManager.getLogger(DBManager.class);
   private CodecRegistry codecRegistry;
   private PojoCodecProvider pojoCodecProvider;
   private MongoClient mongoClient;
@@ -39,8 +43,10 @@ public class DBManager {
   public void upsert(GuildEntity entity) {
     if(findGuildById(entity.getId()) == null) {
       mongoCollection.insertOne(entity);
+      logger.info("created new GuildEntity for " + entity.getId());
     } else {
-      mongoCollection.replaceOne(Filters.eq("_id", entity.getId()), entity);      
+      mongoCollection.replaceOne(Filters.eq("_id", entity.getId()), entity); 
+      logger.info("updated GuildEntity for " + entity.getId());
     }
   }
   
@@ -50,5 +56,6 @@ public class DBManager {
   
   public void delete(String id) {
     mongoCollection.deleteOne(Filters.eq("_id", id));
+    logger.info("deleted GuildEntity for " + id);
   }
 }

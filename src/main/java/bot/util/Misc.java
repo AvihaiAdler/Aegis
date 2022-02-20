@@ -25,7 +25,7 @@ public class Misc {
     return !content.isEmpty();
   }
   
-  public static boolean isAllowed(MessageCreateEvent event, DiscordApi discordApi) {
+  public static boolean isUserAllowed(MessageCreateEvent event, DiscordApi discordApi) {
     var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
     
     // user has no role

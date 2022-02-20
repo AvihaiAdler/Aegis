@@ -1,6 +1,9 @@
 package bot.listeners;
 
 import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -13,6 +16,7 @@ import bot.util.Misc;
  * itr doesnt work properly
  */
 public class MentionListener implements MessageCreateListener {
+  private final Logger logger = LogManager.getLogger(MentionListener.class);
   private DBManager dbManager;
   
   public MentionListener(DBManager dbManager) {
@@ -22,10 +26,11 @@ public class MentionListener implements MessageCreateListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent() && event.getMessage().getMentionedUsers().contains(event.getApi().getYourself())) {
-      if(!Misc.isAllowed(event, event.getApi())) return;
+      if(!Misc.isUserAllowed(event, event.getApi())) return;
   
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-
+      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
+      
       if (event.getChannel().canYouWrite()) {
         var embed = Misc.getInfo(guild, event.getServer().get());
         var reactionListener = new ServerInfoReactionListener(embed.listIterator());

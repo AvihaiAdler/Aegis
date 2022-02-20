@@ -2,6 +2,9 @@ package bot.listeners;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -9,11 +12,8 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import bot.dal.DBManager;
 import bot.util.Misc;
 
-/*
- * TODO
- * exceptionally if needed
- */
 public class SuspectListener implements MessageCreateListener {
+  private final Logger logger = LogManager.getLogger(SuspectListener.class);
   private DBManager dbManager;
   
   public SuspectListener(DBManager dbManager) {
@@ -23,10 +23,12 @@ public class SuspectListener implements MessageCreateListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if(event.getMessageAuthor().asUser().isPresent()) {
-      if(!Misc.isAllowed(event, event.getApi())) return;
+      if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
 
+      logger.info("invoking " + this.getClass().getName() + " for server " + event.getServer().get());
+      
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       var addedWords = new ArrayList<String>();
       
@@ -41,11 +43,16 @@ public class SuspectListener implements MessageCreateListener {
       
       dbManager.upsert(guild);
       
-      if(addedWords.size() > 0 && event.getChannel().canYouWrite()) {
+      if(addedWords.size() > 0) {
         StringBuilder msg = new StringBuilder();
         addedWords.forEach(word -> msg.append("**" + word + "**, "));
         msg.deleteCharAt(msg.lastIndexOf(","));
-        event.getChannel().sendMessage("Added the following word\\s to the list:\n" + msg).exceptionally(ExceptionLogger.get());      
+        
+        logger.info("the server " + guild.getId() + " added the following words to their suspicious list " + msg);
+        
+        if(event.getChannel().canYouWrite()) {
+          event.getChannel().sendMessage("Added the following word\\s to the list:\n" + msg).exceptionally(ExceptionLogger.get());                
+        }
       } 
     }
   }

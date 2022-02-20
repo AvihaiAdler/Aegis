@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -26,12 +28,9 @@ import bot.listeners.UnsuspectListener;
 import bot.listeners.UpdateLogChannelListener;
 import bot.util.ConfigManager;
 
-/*
- * TODO:
- * add logging for each listener
- */
-
 public class Main {
+  private final static Logger logger = LogManager.getLogger(Main.class);
+  
   public static void main(final String[] args) throws Exception {
     final Map<String, MessageCreateListener> commands = Collections.synchronizedMap(new HashMap<>());    
     var properties = ConfigManager.getInstance();
@@ -40,9 +39,11 @@ public class Main {
       properties.populate();
     } catch (IOException e) {
       // log
+      logger.error(e.getMessage());
       System.exit(1);
     } catch (NullPointerException ne) {
       //log
+      logger.error(ne.getMessage());
       System.exit(1);
     }
 
@@ -62,6 +63,7 @@ public class Main {
                     Intent.GUILD_MESSAGE_TYPING)
             .login()
             .join();
+    logger.info("successfuly logged in");
     
     discordApi.setMessageCacheSize(30, 60*10); //store only 30 messages per channel for 10 minutes
     discordApi.updateActivity(ActivityType.WATCHING, "messages");
@@ -76,6 +78,7 @@ public class Main {
     commands.put("unblock", new UnblockedListener(dbManager));
     commands.put("threshold", new ThresholdListener(dbManager));
     commands.put("logto", new UpdateLogChannelListener(dbManager));
+    logger.info("added command listeners");
     
     // Server leave listener
     discordApi.addServerLeaveListener(leaveEvent -> {
@@ -83,20 +86,26 @@ public class Main {
       if (dbManager.findGuildById(serverId) != null) {
         dbManager.delete(serverId);
       }
-      System.out.println("left " + serverId); //log
+      logger.info("Left " + serverId);
     });
 
     // Server joined listener
     discordApi.addServerJoinListener(joinEvent -> {
       var serverId = joinEvent.getServer().getIdAsString();
+      System.out.println(dbManager.findGuildById(serverId));
       if (dbManager.findGuildById(serverId) == null) {
         ServerTextChannel channel = null;
-        if(joinEvent.getServer().canYouCreateChannels()) {
-          channel = joinEvent.getServer().createTextChannelBuilder().setName(discordApi.getYourself() + "-log").create().join();
+        var loggingChannelName = discordApi.getYourself().getName() + "-log";
+        
+        if(!joinEvent.getServer().getChannelsByName(loggingChannelName).isEmpty()) {
+          channel = joinEvent.getServer().getChannelsByName(loggingChannelName).get(0).asServerTextChannel().get();
+        } else if(joinEvent.getServer().canYouCreateChannels()) {
+          channel = joinEvent.getServer().createTextChannelBuilder().setName(loggingChannelName).create().join();
         }
+        
         dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(), channel == null ? null : channel.getIdAsString()));
+        logger.info("joined " + dbManager.findGuildById(serverId).getGuildName());
       }
-      System.out.println("joined " + dbManager.findGuildById(serverId));  //log
     });
     
     // Suspicious words Listener
