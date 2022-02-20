@@ -38,11 +38,9 @@ public class Main {
     try {
       properties.populate();
     } catch (IOException e) {
-      // log
       logger.error(e.getMessage());
       System.exit(1);
     } catch (NullPointerException ne) {
-      //log
       logger.error(ne.getMessage());
       System.exit(1);
     }
@@ -98,9 +96,15 @@ public class Main {
         var loggingChannelName = discordApi.getYourself().getName() + "-log";
         
         if(!joinEvent.getServer().getChannelsByName(loggingChannelName).isEmpty()) {
-          channel = joinEvent.getServer().getChannelsByName(loggingChannelName).get(0).asServerTextChannel().get();
+          channel = joinEvent.getServer()
+                  .getChannelsByName(loggingChannelName).get(0)
+                  .asServerTextChannel().get();
         } else if(joinEvent.getServer().canYouCreateChannels()) {
-          channel = joinEvent.getServer().createTextChannelBuilder().setName(loggingChannelName).create().join();
+          channel = joinEvent.getServer()
+                  .createTextChannelBuilder()
+                  .setName(loggingChannelName)
+                  .create()
+                  .join();
         }
         
         dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(), channel == null ? null : channel.getIdAsString()));
