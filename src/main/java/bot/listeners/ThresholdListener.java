@@ -40,7 +40,7 @@ public class ThresholdListener implements MessageCreateListener {
           }
         }
       } catch (NumberFormatException e) {
-        //log
+        logger.error(e.getMessage());
       }
     }
   }
