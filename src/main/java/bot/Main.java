@@ -61,7 +61,7 @@ public class Main {
                     Intent.GUILD_MESSAGE_TYPING)
             .login()
             .join();
-    logger.info("successfuly logged in");
+//    logger.info("successfuly logged in");
     
     discordApi.setMessageCacheSize(30, 60*10); //store only 30 messages per channel for 10 minutes
     discordApi.updateActivity(ActivityType.WATCHING, "messages");
@@ -90,21 +90,23 @@ public class Main {
     // Server joined listener
     discordApi.addServerJoinListener(joinEvent -> {
       var serverId = joinEvent.getServer().getIdAsString();
-      System.out.println(dbManager.findGuildById(serverId));
+
       if (dbManager.findGuildById(serverId) == null) {
         ServerTextChannel channel = null;
-        var loggingChannelName = discordApi.getYourself().getName() + "-log";
+        var loggingChannelName = discordApi.getYourself().getName().toLowerCase() + "-log";
         
         if(!joinEvent.getServer().getChannelsByName(loggingChannelName).isEmpty()) {
           channel = joinEvent.getServer()
                   .getChannelsByName(loggingChannelName).get(0)
                   .asServerTextChannel().get();
-        } else if(joinEvent.getServer().canYouCreateChannels()) {
-          channel = joinEvent.getServer()
-                  .createTextChannelBuilder()
-                  .setName(loggingChannelName)
-                  .create()
-                  .join();
+        } else {
+          if (joinEvent.getServer().canYouCreateChannels()) {
+            channel = joinEvent.getServer()
+                    .createTextChannelBuilder()
+                    .setName(loggingChannelName)
+                    .create()
+                    .join();
+          }
         }
         
         dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(), channel == null ? null : channel.getIdAsString()));
