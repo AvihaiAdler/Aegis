@@ -64,7 +64,7 @@ This section is for further develepment of Aegis and doesn't aim to explain how 
 version: "2"
 services:
   aegis:
-    image: cloud.canister.io:5000/adler/aegis:0.0.1
+    image: repo_address
     ports:
       - 443:443
     environment:
