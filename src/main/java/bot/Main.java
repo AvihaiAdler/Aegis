@@ -63,7 +63,7 @@ public class Main {
             Intent.GUILD_MESSAGE_TYPING)
         .login()
         .join();
-    // logger.info("successfuly logged in");
+    logger.info("successfuly logged in");
 
     discordApi.setMessageCacheSize(30, 60 * 10); // store only 30 messages per channel for 10 minutes
     discordApi.updateActivity(ActivityType.WATCHING, "messages");
