@@ -33,6 +33,7 @@ import bot.listeners.UnsuspectListener;
 import bot.listeners.UpdateLogChannelListener;
 import bot.listeners.UrlListener;
 import bot.util.ConfigManager;
+import bot.util.Misc;
 
 public class Main {
   private final static Logger logger = LogManager.getLogger(Main.class);
@@ -53,12 +54,12 @@ public class Main {
 
     final DBManager dbManager = new DBManager();
 
-    dbManager.initConnection(/* properties.getProperties().get("connectionString") */System.getenv("MONGO_CRED"),
+    dbManager.initConnection(System.getenv("MONGO_CRED"),
         properties.getProperties().get("db"),
         properties.getProperties().get("collection"));
 
     var discordApi = new DiscordApiBuilder()
-        .setToken(/* properties.getProperties().get("token") */System.getenv("TOKEN"))
+        .setToken(System.getenv("TOKEN"))
         .setAllNonPrivilegedIntentsExcept(Intent.DIRECT_MESSAGES,
             Intent.DIRECT_MESSAGE_TYPING,
             Intent.DIRECT_MESSAGE_REACTIONS,
@@ -96,7 +97,7 @@ public class Main {
 
     // Server joined listener
     discordApi.addServerJoinListener(joinEvent -> {
-      registerServer(joinEvent, dbManager);
+      Misc.registerServer(joinEvent, dbManager);
     });
 
     // Suspicious words Listener
@@ -123,7 +124,7 @@ public class Main {
         var guild = dbManager.findGuildById(serverId);
 
         if (guild == null) {
-          registerServer(event, dbManager);
+          Misc.registerServer(event, dbManager);
           return;
         }
 
@@ -136,39 +137,5 @@ public class Main {
         }
       }
     });
-  }
-
-  private static void registerServer(Event event, final DBManager dbManager) {
-    Server server = null;
-    if (event instanceof ServerEvent) {
-      server = ((ServerEvent) event).getServer();
-    } else if (event instanceof MessageCreateEvent) {
-      server = ((MessageCreateEvent) event).getServer().get();
-    } else {
-      logger.error("unsupported event detected");
-    }
-
-    if (dbManager.findGuildById(server.getIdAsString()) == null) {
-      ServerTextChannel channel = null;
-      var loggingChannelName = event.getApi().getYourself().getName().toLowerCase() + "-log";
-
-      if (!server.getChannelsByName(loggingChannelName).isEmpty()) {
-        channel = server
-            .getChannelsByName(loggingChannelName).get(0)
-            .asServerTextChannel().get();
-      } else {
-        if (server.canYouCreateChannels()) {
-          channel = server
-              .createTextChannelBuilder()
-              .setName(loggingChannelName)
-              .create()
-              .join();
-        }
-      }
-
-      dbManager.upsert(new GuildEntity(server.getIdAsString(), server.getName(),
-          channel == null ? null : channel.getIdAsString()));
-      logger.info("registered " + dbManager.findGuildById(server.getIdAsString()).getGuildName());
-    }
   }
 }

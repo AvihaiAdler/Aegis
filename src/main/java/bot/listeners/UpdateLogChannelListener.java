@@ -39,7 +39,7 @@ public class UpdateLogChannelListener implements MessageCreateListener {
       if (event.getChannel().canYouWrite()) {
         logger.info("the server " + guild.getId() + " changed their logging channel to " + guild.getLogChannelId());
         event.getChannel()
-            .sendMessage("Logs will appear at **"
+            .sendMessage("Logs will appear at **#"
                 + event.getServer().get()
                     .getChannelById(guild.getLogChannelId()).get()
                     .getName()
