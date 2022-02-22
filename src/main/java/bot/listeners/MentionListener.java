@@ -29,6 +29,11 @@ public class MentionListener implements MessageCreateListener {
       if(!Misc.isUserAllowed(event, event.getApi())) return;
   
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
+      if(!guild.getGuildName().equals(event.getServer().get().getName())) {
+        guild.setGuildName(event.getServer().get().getName());
+        dbManager.upsert(guild);
+      }
+      
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
       if (event.getChannel().canYouWrite()) {

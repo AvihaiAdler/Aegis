@@ -13,14 +13,14 @@ public class ConfigManager {
   private ConfigManager() {
     properties = new HashMap<>();
   }
-  
+
   public synchronized static ConfigManager getInstance() {
-    if(instance == null) {
+    if (instance == null) {
       instance = new ConfigManager();
     }
     return instance;
   }
-  
+
   public Map<String, String> getProperties() {
     return properties;
   }
@@ -28,14 +28,15 @@ public class ConfigManager {
   public void setProperties(Map<String, String> properties) {
     this.properties = properties;
   }
-  
+
   public void populate() throws IOException, NullPointerException {
     var inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
     var configValues = new Properties();
     configValues.load(inputStream);
-      
-    properties.put("token", configValues.getProperty("token"));
-    properties.put("connectionString", configValues.getProperty("connection.string"));
+
+    // properties.put("token", configValues.getProperty("token"));
+    // properties.put("connectionString",
+    // configValues.getProperty("connection.string"));
     properties.put("db", configValues.getProperty("db"));
     properties.put("collection", configValues.getProperty("collection"));
     inputStream.close();
@@ -57,6 +58,5 @@ public class ConfigManager {
     ConfigManager other = (ConfigManager) obj;
     return Objects.equals(properties, other.properties);
   }
-  
-  
+
 }

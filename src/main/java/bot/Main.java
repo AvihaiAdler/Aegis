@@ -28,11 +28,16 @@ import bot.listeners.UnsuspectListener;
 import bot.listeners.UpdateLogChannelListener;
 import bot.util.ConfigManager;
 
+/*
+* TODO:
+* add a listened to scan blocked urls (maybe in the SpamListener?)
+*/
+
 public class Main {
   private final static Logger logger = LogManager.getLogger(Main.class);
-  
+
   public static void main(final String[] args) throws Exception {
-    final Map<String, MessageCreateListener> commands = Collections.synchronizedMap(new HashMap<>());    
+    final Map<String, MessageCreateListener> commands = Collections.synchronizedMap(new HashMap<>());
     var properties = ConfigManager.getInstance();
 
     try {
@@ -47,25 +52,25 @@ public class Main {
 
     final DBManager dbManager = new DBManager();
 
-    dbManager.initConnection(properties.getProperties().get("connectionString"), 
-            properties.getProperties().get("db"),
-            properties.getProperties().get("collection"));
-    
+    dbManager.initConnection(/* properties.getProperties().get("connectionString") */System.getenv("MONGO_CRED"),
+        properties.getProperties().get("db"),
+        properties.getProperties().get("collection"));
+
     var discordApi = new DiscordApiBuilder()
-            .setToken(properties.getProperties().get("token"))
-            .setAllNonPrivilegedIntentsExcept(Intent.DIRECT_MESSAGES, 
-                    Intent.DIRECT_MESSAGE_TYPING, 
-                    Intent.DIRECT_MESSAGE_REACTIONS,
-                    Intent.GUILD_INVITES,
-                    Intent.GUILD_WEBHOOKS,
-                    Intent.GUILD_MESSAGE_TYPING)
-            .login()
-            .join();
-//    logger.info("successfuly logged in");
-    
-    discordApi.setMessageCacheSize(30, 60*10); //store only 30 messages per channel for 10 minutes
+        .setToken(/* properties.getProperties().get("token") */System.getenv("TOKEN"))
+        .setAllNonPrivilegedIntentsExcept(Intent.DIRECT_MESSAGES,
+            Intent.DIRECT_MESSAGE_TYPING,
+            Intent.DIRECT_MESSAGE_REACTIONS,
+            Intent.GUILD_INVITES,
+            Intent.GUILD_WEBHOOKS,
+            Intent.GUILD_MESSAGE_TYPING)
+        .login()
+        .join();
+    // logger.info("successfuly logged in");
+
+    discordApi.setMessageCacheSize(30, 60 * 10); // store only 30 messages per channel for 10 minutes
     discordApi.updateActivity(ActivityType.WATCHING, "messages");
-    
+
     // Commands listeners
     commands.put("restrict", new RestrictListener(dbManager));
     commands.put("unrestrict", new UnrestrictListener(dbManager));
@@ -77,7 +82,7 @@ public class Main {
     commands.put("threshold", new ThresholdListener(dbManager));
     commands.put("logto", new UpdateLogChannelListener(dbManager));
     logger.info("added command listeners");
-    
+
     // Server leave listener
     discordApi.addServerLeaveListener(leaveEvent -> {
       var serverId = leaveEvent.getServer().getIdAsString();
@@ -94,53 +99,55 @@ public class Main {
       if (dbManager.findGuildById(serverId) == null) {
         ServerTextChannel channel = null;
         var loggingChannelName = discordApi.getYourself().getName().toLowerCase() + "-log";
-        
-        if(!joinEvent.getServer().getChannelsByName(loggingChannelName).isEmpty()) {
+
+        if (!joinEvent.getServer().getChannelsByName(loggingChannelName).isEmpty()) {
           channel = joinEvent.getServer()
-                  .getChannelsByName(loggingChannelName).get(0)
-                  .asServerTextChannel().get();
+              .getChannelsByName(loggingChannelName).get(0)
+              .asServerTextChannel().get();
         } else {
           if (joinEvent.getServer().canYouCreateChannels()) {
             channel = joinEvent.getServer()
-                    .createTextChannelBuilder()
-                    .setName(loggingChannelName)
-                    .create()
-                    .join();
+                .createTextChannelBuilder()
+                .setName(loggingChannelName)
+                .create()
+                .join();
           }
         }
-        
-        dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(), channel == null ? null : channel.getIdAsString()));
+
+        dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(),
+            channel == null ? null : channel.getIdAsString()));
         logger.info("joined " + dbManager.findGuildById(serverId).getGuildName());
       }
     });
-    
+
     // Suspicious words Listener
     var suspiciousWordsListener = new SuspiciousWordsListener(dbManager);
     discordApi.addMessageCreateListener(suspiciousWordsListener::onMessageCreate);
-    
+
     // Spam listener
     var spamListener = new SpamListener(dbManager);
     discordApi.addMessageCreateListener(spamListener::onMessageCreate);
-    
+
     var mentionListener = new MentionListener(dbManager);
     discordApi.addMessageCreateListener(mentionListener::onMessageCreate);
-    
+
     // Commands listeners
     discordApi.addMessageCreateListener(event -> {
-      if(event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
+      if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
         var content = Arrays.asList(event.getMessageContent().split("\\s+"));
         var serverId = event.getServer().get().getIdAsString();
         var guild = dbManager.findGuildById(serverId);
-        
-        if(guild == null) {
+
+        if (guild == null) {
           dbManager.upsert(new GuildEntity(serverId, event.getServer().get().getName(), null));
           return;
         }
-         
-        if(!event.getMessageContent().startsWith(guild.getPrefix())) return;
-        
+
+        if (!event.getMessageContent().startsWith(guild.getPrefix()))
+          return;
+
         var listener = commands.get(content.get(0).split(guild.getPrefix())[1]);
-        if(listener != null) {
+        if (listener != null) {
           listener.onMessageCreate(event);
         }
       }

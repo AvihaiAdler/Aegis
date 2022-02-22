@@ -76,10 +76,29 @@ public class Misc {
       embed.addInlineField("Name", server.getChannelById(guild.getLogChannelId()).get().getName());        
     }
     
-    info.add(embed);
     
-    suspiciousWords(guild).forEach(str -> info.add(new EmbedBuilder().setTitle("Suspicious words:").setDescription(str)));
-    blockedUrls(guild).forEach(urls -> info.add(new EmbedBuilder().setTitle("Blocked urls:").setDescription(urls)));
+    var suspiciousWords = suspiciousWords(guild);
+    var blockedUrls = blockedUrls(guild);
+    if(suspiciousWords.size() <= 3) {
+      suspiciousWords.forEach(str -> embed.addField("Suspicious words", str));
+      info.add(embed);
+    } else {
+      info.add(embed);
+      var susEmbed = new EmbedBuilder().setTitle("Suspicious words");
+      
+      var counter = 0;
+      for(var str : suspiciousWords) {
+        if(counter != 0 && counter % 5 == 0) {
+          info.add(susEmbed);
+          susEmbed = new EmbedBuilder().setTitle("Info:");
+        }
+        susEmbed.addField(Integer.toString((counter % 5) + 1), str);
+        counter++;
+        
+      }
+    }
+        
+    blockedUrls.forEach(urls -> info.add(new EmbedBuilder().setTitle("Blocked urls:").setDescription(urls)));
     
     return info;
   }
@@ -96,7 +115,7 @@ public class Misc {
         words.append("\n");
       }
       
-      if(words.length() + (word + ", ").length() >= 4096) {
+      if(words.length() + (word + ", ").length() >= 1024) {
         words.delete(words.length()-2, words.length());
         wordLst.add(words.toString());
         words.delete(0, words.length());
@@ -119,7 +138,7 @@ public class Misc {
     var urls = new StringBuilder();
     
     for(var url : guild.getBlockedUrls()) {    
-      if(urls.length() + (url + "\n").length() >= 4096) {
+      if(urls.length() + (url + "\n").length() >= 4024) {
         urls.delete(urls.length()-1, urls.length());
         blocked.add(urls.toString());
         urls.delete(0, urls.length());
