@@ -44,11 +44,11 @@ All commands must start with a prefix (`!` by default) except for the first one 
 
 ### Known issues
 
-The `@Aegis` command doen't work propery when trying to 'switch' pages. Most of the time you require to react twice to get the next page
+The `info` command doen't work propery when trying to 'switch' pages. Most of the time you require to react twice to get the next page
 
 ### Future development
 
-- [ ] The `@Aegis` command can benefit from Buttons instead of Reactions
+- [ ] The `info` command can benefit from Buttons instead of Reactions
 - [ ] Turning Aegis into a full fledged moderation bot
 
 ### Deployment
