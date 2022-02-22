@@ -3,7 +3,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle assemble
 
-FROM openjdk:19-jdk-slim
+FROM openjdk:16-jdk-alpine
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/aegis.jar
 EXPOSE 443
