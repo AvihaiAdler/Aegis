@@ -28,18 +28,19 @@ Aegis has 3 different functionalities:
 Aegis has a set of commands (listed below) you can use, note that currently only people with ADMINISTRATOR privileges / the server owner can invoke them.
 All commands must start with a prefix (`!` by default) except for the first one on the list.
 
-| Command    | Prameters                                  | Effect                                                            |
-| ---------- | ------------------------------------------ | ----------------------------------------------------------------- |
-| @Aegis     | None                                       | Aegis will dispaly all the information it holds about your server |
-| logto      | Channel id                                 | Aegis will start to log into the channel you specified            |
-| prefix     | Character/s                                | Aegis will replace the prefix for each command on your server     |
-| threshold  | A number between 0-(2^31)-1 (0 by default) | Aegis will set the threshold to the number you specified          |
-| restrict   | None                                       | Aegis will operate in restrict mode (see above)                   |
-| unrestrict | None                                       | Aegis will operate in unrestrict mode (see above)                 |
-| suspect    | A list of words seperated by spaces        | Aegis will save the specified words in it's suspicious list       |
-| unsuspect  | A list of words seperated by spaces        | Aegis will removed the specified words from it's suspicious list  |
-| block      | A list of (valid) urls seperated by spaces | Aegis will save the specified urls in it's blocked list           |
-| unblock    | A list of (valid) urls seperated by spaces | Aegis will remove the specified urls from it's blocked list       |
+| Command    | Prameters                                    | Effect                                                            | Privileges  |
+| ---------- | -------------------------------------------- | ----------------------------------------------------------------- | ----------- |
+| @Aegis     | None                                         | Aegis will display a short version of this table                  | EVERYONE    |
+| info       | None                                         | Aegis will dispaly all the information it holds about your server | ADMIN/OWNER |
+| logto      | Channel id                                   | Aegis will start to log into the channel you specified            | ADMIN/OWNER |
+| prefix     | Character/s                                  | Aegis will replace the prefix for each command on your server     | ADMIN/OWNER |
+| threshold  | An Integer between 0-(2^31)-1 (0 by default) | Aegis will set the threshold to the number you specified          | ADMIN/OWNER |
+| restrict   | None                                         | Aegis will operate in restrict mode (see above)                   | ADMIN/OWNER |
+| unrestrict | None                                         | Aegis will operate in unrestrict mode (see above)                 | ADMIN/OWNER |
+| suspect    | A list of words seperated by spaces          | Aegis will save the specified words in it's suspicious list       | ADMIN/OWNER |
+| unsuspect  | A list of words seperated by spaces          | Aegis will removed the specified words from it's suspicious list  | ADMIN/OWNER |
+| block      | A list of (valid) urls seperated by spaces   | Aegis will save the specified urls in it's blocked list           | ADMIN/OWNER |
+| unblock    | A list of (valid) urls seperated by spaces   | Aegis will remove the specified urls from it's blocked list       | ADMIN/OWNER |
 
 ### Known issues
 
