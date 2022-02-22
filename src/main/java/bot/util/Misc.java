@@ -138,13 +138,13 @@ public class Misc {
     var urls = new StringBuilder();
     
     for(var url : guild.getBlockedUrls()) {    
-      if(urls.length() + (url + "\n").length() >= 4024) {
+      if(urls.length() + (url + "\n\n").length() >= 4024) {
         urls.delete(urls.length()-1, urls.length());
         blocked.add(urls.toString());
         urls.delete(0, urls.length());
       }
       
-      urls.append(url + "\n");
+      urls.append(url + "\n\n");
     }
     
     if(urls.length() > 2) {
