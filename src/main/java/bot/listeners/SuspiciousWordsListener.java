@@ -43,10 +43,11 @@ public class SuspiciousWordsListener implements MessageCreateListener {
       // check embeds if there're any
       if(!event.getMessage().getEmbeds().isEmpty()) {
         event.getMessage().getEmbeds().forEach(embed -> {
-          if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages())
+          if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages()) {
             event.deleteMessage().exceptionally(ExceptionLogger.get());
             log(guild, event);
-            return;
+            return;            
+          }
         });        
       }
       
@@ -61,7 +62,7 @@ public class SuspiciousWordsListener implements MessageCreateListener {
   }
   
   private void log(GuildEntity guild, MessageCreateEvent event) {
-    logger.info("detedted some suspicious words for " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
+    logger.info("detected some suspicious words for " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
     
     // log to the log channel
     var logChannelId = guild.getLogChannelId();
@@ -71,7 +72,7 @@ public class SuspiciousWordsListener implements MessageCreateListener {
       event.getServer().get()
         .getChannelById(logChannelId).get()
         .asServerTextChannel().get()
-              .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+        .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
                       + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
                       + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
                       + event.getApi().getYourself().getDiscriminatedName()
