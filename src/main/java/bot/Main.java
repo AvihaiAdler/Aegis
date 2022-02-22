@@ -15,7 +15,8 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
 import bot.listeners.BlockListener;
-import bot.listeners.MentionListener;
+import bot.listeners.InfoListener;
+import bot.listeners.MentionedListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
 import bot.listeners.SpamListener;
@@ -26,11 +27,12 @@ import bot.listeners.UnblockedListener;
 import bot.listeners.UnrestrictListener;
 import bot.listeners.UnsuspectListener;
 import bot.listeners.UpdateLogChannelListener;
+import bot.listeners.UrlListener;
 import bot.util.ConfigManager;
 
 /*
 * TODO:
-* add a listened to scan blocked urls (maybe in the SpamListener?)
+* add a listener to scan blocked urls (maybe in the SpamListener?)
 */
 
 public class Main {
@@ -81,6 +83,7 @@ public class Main {
     commands.put("unblock", new UnblockedListener(dbManager));
     commands.put("threshold", new ThresholdListener(dbManager));
     commands.put("logto", new UpdateLogChannelListener(dbManager));
+    commands.put("info", new InfoListener(dbManager));
     logger.info("added command listeners");
 
     // Server leave listener
@@ -127,9 +130,14 @@ public class Main {
     // Spam listener
     var spamListener = new SpamListener(dbManager);
     discordApi.addMessageCreateListener(spamListener::onMessageCreate);
+    
+    // blocked urls listener
+    var urlListener = new UrlListener(dbManager);
+    discordApi.addMessageCreateListener(urlListener::onMessageCreate);
 
-    var mentionListener = new MentionListener(dbManager);
-    discordApi.addMessageCreateListener(mentionListener::onMessageCreate);
+    // mention listener
+    var mentionedListener = new MentionedListener(dbManager);
+    discordApi.addMessageCreateListener(mentionedListener::onMessageCreate);
 
     // Commands listeners
     discordApi.addMessageCreateListener(event -> {

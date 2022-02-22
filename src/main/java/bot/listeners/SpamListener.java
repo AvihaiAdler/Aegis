@@ -48,7 +48,7 @@ public class SpamListener implements MessageCreateListener {
             event.getServer().get()
               .getChannelById(logChannelId).get()
               .asServerTextChannel().get()
-                    .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+              .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
                             + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
                             + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
                             + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```possible spam```");

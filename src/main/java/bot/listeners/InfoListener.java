@@ -15,17 +15,17 @@ import bot.util.Misc;
  * TODO
  * itr doesnt work properly
  */
-public class MentionListener implements MessageCreateListener {
-  private final Logger logger = LogManager.getLogger(MentionListener.class);
+public class InfoListener implements MessageCreateListener {
+  private final Logger logger = LogManager.getLogger(InfoListener.class);
   private DBManager dbManager;
   
-  public MentionListener(DBManager dbManager) {
+  public InfoListener(DBManager dbManager) {
     this.dbManager = dbManager;
   }
 
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent() && event.getMessage().getMentionedUsers().contains(event.getApi().getYourself())) {
+    if(event.getMessageAuthor().asUser().isPresent()) {
       if(!Misc.isUserAllowed(event, event.getApi())) return;
   
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
@@ -38,7 +38,7 @@ public class MentionListener implements MessageCreateListener {
       
       if (event.getChannel().canYouWrite()) {
         var embed = Misc.getInfo(guild, event.getServer().get());
-        var reactionListener = new ServerInfoReactionListener(embed.listIterator());
+        var reactionListener = new ServerInfoReactionListener(embed);
 //        var componentListener = new ComponentListener(embed);
 
 //        new MessageBuilder().setEmbed(embed.get(0))
