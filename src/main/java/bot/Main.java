@@ -11,6 +11,10 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.intent.Intent;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.event.Event;
+import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.event.server.ServerEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import bot.dal.DBManager;
 import bot.data.GuildEntity;
@@ -92,30 +96,7 @@ public class Main {
 
     // Server joined listener
     discordApi.addServerJoinListener(joinEvent -> {
-      var serverId = joinEvent.getServer().getIdAsString();
-
-      if (dbManager.findGuildById(serverId) == null) {
-        ServerTextChannel channel = null;
-        var loggingChannelName = discordApi.getYourself().getName().toLowerCase() + "-log";
-
-        if (!joinEvent.getServer().getChannelsByName(loggingChannelName).isEmpty()) {
-          channel = joinEvent.getServer()
-              .getChannelsByName(loggingChannelName).get(0)
-              .asServerTextChannel().get();
-        } else {
-          if (joinEvent.getServer().canYouCreateChannels()) {
-            channel = joinEvent.getServer()
-                .createTextChannelBuilder()
-                .setName(loggingChannelName)
-                .create()
-                .join();
-          }
-        }
-
-        dbManager.upsert(new GuildEntity(serverId, joinEvent.getServer().getName(),
-            channel == null ? null : channel.getIdAsString()));
-        logger.info("joined " + dbManager.findGuildById(serverId).getGuildName());
-      }
+      registerServer(joinEvent, dbManager);
     });
 
     // Suspicious words Listener
@@ -142,7 +123,7 @@ public class Main {
         var guild = dbManager.findGuildById(serverId);
 
         if (guild == null) {
-          dbManager.upsert(new GuildEntity(serverId, event.getServer().get().getName(), null));
+          registerServer(event, dbManager);
           return;
         }
 
@@ -155,5 +136,39 @@ public class Main {
         }
       }
     });
+  }
+
+  private static void registerServer(Event event, final DBManager dbManager) {
+    Server server = null;
+    if (event instanceof ServerEvent) {
+      server = ((ServerEvent) event).getServer();
+    } else if (event instanceof MessageCreateEvent) {
+      server = ((MessageCreateEvent) event).getServer().get();
+    } else {
+      logger.error("unsupported event detected");
+    }
+
+    if (dbManager.findGuildById(server.getIdAsString()) == null) {
+      ServerTextChannel channel = null;
+      var loggingChannelName = event.getApi().getYourself().getName().toLowerCase() + "-log";
+
+      if (!server.getChannelsByName(loggingChannelName).isEmpty()) {
+        channel = server
+            .getChannelsByName(loggingChannelName).get(0)
+            .asServerTextChannel().get();
+      } else {
+        if (server.canYouCreateChannels()) {
+          channel = server
+              .createTextChannelBuilder()
+              .setName(loggingChannelName)
+              .create()
+              .join();
+        }
+      }
+
+      dbManager.upsert(new GuildEntity(server.getIdAsString(), server.getName(),
+          channel == null ? null : channel.getIdAsString()));
+      logger.info("registered " + dbManager.findGuildById(server.getIdAsString()).getGuildName());
+    }
   }
 }
