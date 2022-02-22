@@ -30,11 +30,6 @@ import bot.listeners.UpdateLogChannelListener;
 import bot.listeners.UrlListener;
 import bot.util.ConfigManager;
 
-/*
-* TODO:
-* add a listener to scan blocked urls (maybe in the SpamListener?)
-*/
-
 public class Main {
   private final static Logger logger = LogManager.getLogger(Main.class);
 
@@ -130,7 +125,7 @@ public class Main {
     // Spam listener
     var spamListener = new SpamListener(dbManager);
     discordApi.addMessageCreateListener(spamListener::onMessageCreate);
-    
+
     // blocked urls listener
     var urlListener = new UrlListener(dbManager);
     discordApi.addMessageCreateListener(urlListener::onMessageCreate);
