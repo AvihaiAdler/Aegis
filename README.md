@@ -48,8 +48,8 @@ The `@Aegis` command doen't work propery when trying to 'switch' pages. Most of 
 
 ### Future development
 
-[ ] The `@Aegis` command can benefit from Buttons instead of Reactions
-[ ] Turning Aegis into a full fledged moderation bot
+- [ ] The `@Aegis` command can benefit from Buttons instead of Reactions
+- [ ] Turning Aegis into a full fledged moderation bot
 
 ### Deployment
 
