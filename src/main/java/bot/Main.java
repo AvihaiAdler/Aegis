@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApiBuilder;
@@ -62,7 +64,7 @@ public class Main {
             Intent.GUILD_MESSAGE_TYPING)
         .login()
         .join();
-    logger.info("successfuly logged in");
+    logger.info(discordApi.getYourself().getDiscriminatedName() + " successfuly logged in");
 
     discordApi.setMessageCacheSize(30, 60 * 10); // store only 30 messages per channel for 10 minutes
     discordApi.updateActivity(ActivityType.WATCHING, "messages");
@@ -125,7 +127,7 @@ public class Main {
         if (!event.getMessageContent().startsWith(guild.getPrefix()))
           return;
 
-        var listener = commands.get(content.get(0).split(guild.getPrefix())[1]);
+        var listener = commands.get(content.get(0).split(Pattern.quote(guild.getPrefix()))[1]);
         if (listener != null) {
           listener.onMessageCreate(event);
         }

@@ -4,6 +4,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.component.ActionRow;
+import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -38,21 +41,24 @@ public class InfoListener implements MessageCreateListener {
       
       if (event.getChannel().canYouWrite()) {
         var embed = Misc.getInfo(guild, event.getServer().get());
-        var reactionListener = new ServerInfoReactionListener(embed);
 //        var componentListener = new ComponentListener(embed);
-
 //        new MessageBuilder().setEmbed(embed.get(0))
 //                .addComponents(ActionRow.of(Button.primary("previous", "◀️"), Button.primary("next", "▶️")))
 //                .send(event.getChannel())
 //                .thenAccept(msg -> msg.addMessageComponentCreateListener(componentListener).removeAfter(2, TimeUnit.MINUTES))
 //                .exceptionally(ExceptionLogger.get());
+//        event.getChannel().sendMessage(embed.get(0)).thenAccept(msg -> {
+//          msg.addMessageComponentCreateListener(componentListener).removeAfter(2, TimeUnit.MINUTES);
+//        })
 
+        var reactionListener = new ServerInfoReactionListener(embed);
         event.getChannel().sendMessage(embed.get(0)).thenAccept(msg -> { 
           msg.addReactions("◀️", "▶️").exceptionally(ExceptionLogger.get());
           
           // reaction listener
           msg.addReactionAddListener(reactionListener).removeAfter(2, TimeUnit.MINUTES);
-        }).exceptionally(ExceptionLogger.get());
+        })
+        .exceptionally(ExceptionLogger.get());
       }
     }
   }

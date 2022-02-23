@@ -23,24 +23,38 @@ public class ComponentListener implements MessageComponentCreateListener {
       case "previous":
         if(index > 0) {
           var old = event.getMessageComponentInteraction().getMessage();
-          event.getMessageComponentInteraction().getMessage()
-              .createUpdater()
-              .removeAllEmbeds()
-              .addEmbed(embeds.get(index--))
-              .addComponents(old.getComponents().get(0))
-              .replaceMessage()
-              .exceptionally(ExceptionLogger.get());
+          event.getMessageComponentInteraction()
+                .createImmediateResponder()
+                .removeAllEmbeds()
+                .addEmbed(embeds.get(index--))
+                .addComponents(old.getComponents().get(0))
+                .respond()
+                .exceptionally(ExceptionLogger.get());
+//          event.getMessageComponentInteraction().getMessage()
+//              .createUpdater()
+//              .removeAllEmbeds()
+//              .addEmbed(embeds.get(index--))
+//              .addComponents(old.getComponents().get(0))
+//              .replaceMessage()
+//              .exceptionally(ExceptionLogger.get());
         }
       case "next":
         if(index < embeds.size() - 1) {
           var old = event.getMessageComponentInteraction().getMessage();
-          event.getMessageComponentInteraction().getMessage()
-              .createUpdater()
-              .removeAllEmbeds()
-              .addEmbed(embeds.get(index++))
-              .addComponents(old.getComponents().get(0))
-              .replaceMessage()
-              .exceptionally(ExceptionLogger.get());
+          event.getMessageComponentInteraction()
+                .createImmediateResponder()
+                .removeAllEmbeds()
+                .addEmbed(embeds.get(index++))
+                .addComponents(old.getComponents().get(0))
+                .respond()
+                .exceptionally(ExceptionLogger.get());
+//          event.getMessageComponentInteraction().getMessage()
+//              .createUpdater()
+//              .removeAllEmbeds()
+//              .addEmbed(embeds.get(index++))
+//              .addComponents(old.getComponents().get(0))
+//              .replaceMessage()
+//              .exceptionally(ExceptionLogger.get());
         }
         break;
       default:
