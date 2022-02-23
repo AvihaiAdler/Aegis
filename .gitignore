@@ -1,7 +1,6 @@
 HELP.md
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -35,7 +34,5 @@ out/
 
 ### VS Code ###
 .vscode/
-/gradlew
-/gradlew.bat
 aegis.yaml
 log/aegis.log
