@@ -30,7 +30,6 @@ import bot.util.ConfigManager;
 import bot.util.Misc;
 
 public class Main {
-  //test added comment
   private final static Logger logger = LogManager.getLogger(Main.class);
 
   public static void main(final String[] args) throws Exception {
