@@ -21,8 +21,9 @@ public class UnblockedListener implements MessageCreateListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+  public void onMessageCreate(MessageCreateEvent event) {    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permission for this command
       if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
@@ -32,6 +33,7 @@ public class UnblockedListener implements MessageCreateListener {
       
       logger.info("invoking " + this.getClass().getName() + "for server " + guild.getId());
       
+      // collect urls
       Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
               .stream()
               .filter(Misc::containsUrl)
@@ -39,21 +41,22 @@ public class UnblockedListener implements MessageCreateListener {
               .forEach(url -> {
                 if (guild.getBlockedUrls().remove(url)) unblockedUrls.add(url);
               });
-      
-      if(event.getChannel().canYouManageMessages()) event.deleteMessage();
       dbManager.upsert(guild);
       
-      if(unblockedUrls.size() > 0) {
-        StringBuilder msg = new StringBuilder();
-        unblockedUrls.forEach(url -> msg.append("- `" + url + "`\n"));
-        
-        logger.info("the server " + guild.getId() + " removed the following urls from their block list:\n" + msg);
-        if(event.getChannel().canYouWrite()) {
-          new MessageBuilder().setContent("Removed the following URL\\s from the list:\n" + msg)
-                  .send(event.getChannel())
-                  .exceptionally(ExceptionLogger.get());                
-        }
-      } 
-    }
+      // no urls were 'unblocked' - bail
+      if(unblockedUrls.size() == 0) return;
+      
+      StringBuilder msg = new StringBuilder();
+      unblockedUrls.forEach(url -> msg.append("- `" + url + "`\n"));
+      
+      logger.info("the server " + guild.getId() + " removed the following urls from their block list:\n" + msg);
+      
+      // feedback
+      new MessageBuilder().setContent("Removed the following URL\\s from the list:\n" + msg)
+              .send(event.getChannel())
+              .exceptionally(ExceptionLogger.get())
+              .thenRun(() -> event.getMessage().delete()) //delete the command
+              .exceptionally(ExceptionLogger.get());
+    }); // event.getMessageAuthor().asUser().ifPresent
   }
 }

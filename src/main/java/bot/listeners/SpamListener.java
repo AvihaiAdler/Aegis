@@ -27,16 +27,16 @@ public class SpamListener implements MessageCreateListener {
   public void onMessageCreate(MessageCreateEvent event) {
     if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      if (guild == null)
-        return;
+      if (guild == null) return;
 
+      // user is allowed - ignore their message
       if(event.getMessageAuthor().asUser().isPresent()) {
         if(Misc.isUserAllowed(event, event.getApi())) return;
       }
       
       // if the guild is 'restricted' 
       if (guild.getRestricted() && event.getMessage().mentionsEveryone()) {
-        if(!event.getMessage().getEmbeds().isEmpty() || Misc.containsUrl(event.getMessageContent()) && event.getChannel().canYouManageMessages()) {
+        if(!event.getMessage().getEmbeds().isEmpty() || Misc.containsUrl(event.getMessageContent())) {
           event.deleteMessage().exceptionally(ExceptionLogger.get());
           
           logger.info("detected spam message for server " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
@@ -44,6 +44,7 @@ public class SpamListener implements MessageCreateListener {
           // log to the log channel
           var logChannelId = guild.getLogChannelId();
           if(logChannelId == null) return;
+          
           if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
             var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
             

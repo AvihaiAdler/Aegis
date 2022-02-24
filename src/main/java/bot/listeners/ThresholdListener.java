@@ -18,31 +18,34 @@ public class ThresholdListener implements MessageCreateListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+  public void onMessageCreate(MessageCreateEvent event) {    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permission for this command
       if(!Misc.isUserAllowed(event, event.getApi())) return;
 
       if(event.getMessageContent().split("\\s+").length < 2) return;
-
+      
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
+      // process the command
       try {
         var newThreshold = Integer.valueOf(event.getMessageContent().split("\\s+")[1]);
+        // threshold must be 0 or higher
         if(newThreshold >= 0) {
           guild.setThreshold(newThreshold);
           dbManager.upsert(guild);
           
           logger.info("the server " + guild.getId() + " changed their prefix to " + guild.getPrefix());
-          if(event.getChannel().canYouWrite()) {
-            new MessageBuilder().setContent("Threshold is now **" + guild.getThreshold() + "**")
-                    .send(event.getChannel())
-                    .exceptionally(ExceptionLogger.get());           
-          }
+          
+          // feedback
+          new MessageBuilder().setContent("Threshold is now **" + guild.getThreshold() + "**")
+                  .send(event.getChannel())
+                  .exceptionally(ExceptionLogger.get());         
         }
       } catch (NumberFormatException e) {
         logger.error(e.getMessage());
       }
-    }
+    });
   }
 }

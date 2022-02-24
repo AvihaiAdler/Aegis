@@ -19,24 +19,23 @@ public class RestrictListener implements MessageCreateListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+  public void onMessageCreate(MessageCreateEvent event) {    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permission for this command
       if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
       if(!guild.getRestricted()) {
         guild.setRestricted(true);
         dbManager.upsert(guild);
-        if(event.getChannel().canYouWrite()) {
-          logger.info("the server " + guild.getId() + " is now restricted");
-          
-          new MessageBuilder().setContent("The server is now in restrict mode")
-                  .send(event.getChannel())
-                  .exceptionally(ExceptionLogger.get());             
-        }
-      }      
-    }
+        
+        logger.info("the server " + guild.getId() + " is now restricted");
+
+        new MessageBuilder().setContent("The server is now in restrict mode")
+                .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get());          
+      } 
+    }); //event.getMessageAuthor().asUser().ifPresent
   }
 }

@@ -57,5 +57,43 @@ public class UnsuspectListener implements MessageCreateListener {
         }
       } 
     }
+    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permission for this command
+      if(!Misc.isUserAllowed(event, event.getApi())) return;
+      
+      if(event.getMessageContent().split("\\s+").length < 2) return;
+
+      var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
+      var removedWords = new ArrayList<String>();
+      
+      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
+      
+      // collect words
+      Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
+              .stream()
+              .filter(word -> !word.isBlank())
+              .map(String::toLowerCase)
+              .map(String::trim)
+              .forEach(word -> {             
+                if (guild.getSuspiciousWords().remove(word)) removedWords.add(word);
+              });   
+      dbManager.upsert(guild);
+      
+      // no words were 'unsuspected' - bail
+      if(removedWords.size() == 0) return;
+      
+      StringBuilder msg = new StringBuilder();
+      removedWords.forEach(word -> msg.append("**" + word + "**, "));
+      msg.deleteCharAt(msg.lastIndexOf(","));
+      
+      logger.info("the server " + guild.getId() + "removed the following words from their suspicious word list:\n" + msg);
+      
+      // feedback
+      new MessageBuilder().setContent("Removed the following word\\s from the list:\n" + msg)
+              .send(event.getChannel())
+              .exceptionally(ExceptionLogger.get());             
+
+    }); // event.getMessageAuthor().asUser().ifPresent
   }
 }

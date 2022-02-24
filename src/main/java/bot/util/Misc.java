@@ -101,8 +101,6 @@ public class Misc {
       return false;
     if (event.getServer().get().getChannelById(channelId).get().asTextChannel().isEmpty())
       return false;
-    if (!event.getServer().get().getChannelById(channelId).get().asTextChannel().get().canYouWrite())
-      return false;
 
     return true;
   }

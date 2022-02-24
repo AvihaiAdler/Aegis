@@ -19,25 +19,27 @@ public class PrefixListener implements MessageCreateListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+  public void onMessageCreate(MessageCreateEvent event) {    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permissions for this command
       if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
+      // process message content
       var splitted = event.getMessageContent().split(" ");
+      
       if(splitted.length >= 2) {
         guild.setPrefix(splitted[1]);
         dbManager.upsert(guild);
         
-        if(event.getChannel().canYouWrite()) {
-          logger.info("changed the prefix for server " + guild.getId() + " to " + guild.getPrefix());
-          new MessageBuilder().setContent("Prefix has been changed to **" + guild.getPrefix() + "**")
-                  .send(event.getChannel())
-                  .exceptionally(ExceptionLogger.get());
-        }
+        // feedback
+        new MessageBuilder().setContent("Prefix has been changed to **" + guild.getPrefix() + "**")
+                .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get());
+        
+        logger.info("prefix for " + guild.getId() + ":" + guild.getGuildName() + " changed to " + guild.getPrefix());
       }
-    }
+    }); //event.getMessageAuthor().asUser().ifPresent
   }
 }

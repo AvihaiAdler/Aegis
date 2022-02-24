@@ -23,38 +23,43 @@ public class BlockListener implements MessageCreateListener {
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
       if(!Misc.isUserAllowed(event, event.getApi())) return;
-      
       if(event.getMessageContent().split("\\s+").length < 2) return;
-
-      var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      var blockedUrls = new HashSet<String>();
-      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
-      Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
-              .stream()
-              .filter(Misc::containsUrl)
-              .map(String::trim)
-              .forEach(url -> {
+      var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
+      
+      var blockedUrls = new HashSet<String>();
+      
+      // collect all the urls from the message
+      Arrays.asList(event.getMessageContent().substring(event
+              .getMessageContent()
+              .indexOf(' '))
+              .split("\\s+")).stream()
+              .filter(Misc::containsUrl).map(String::trim).forEach(url -> {
                 if (guild.getBlockedUrls().add(url)) blockedUrls.add(url);
               });
-      
-      if(event.getChannel().canYouManageMessages()) event.deleteMessage();
       dbManager.upsert(guild);
       
-      if(blockedUrls.size() > 0) {
-        StringBuilder msg = new StringBuilder();
-        blockedUrls.forEach(url -> msg.append("- `" + url + "`\n"));
-        
-        logger.info("the server " + guild.getId() + " added the following to their block list:\n" + msg);
-        
-        if(event.getChannel().canYouWrite()) {
-          new MessageBuilder().setContent("The following URL\\s have been added to the list:\n" + msg)
-                  .send(event.getChannel())
-                  .exceptionally(ExceptionLogger.get());                
-        }
-      } 
-    }
+      // delete the original urls provided by the user
+      event.deleteMessage().exceptionally(e -> {
+        logger.error("failed to delete command " + event.getMessageContent() + "\nreason: " + e.getCause());
+        return null;
+      });
+      
+      // no urls were added - bail
+      if (blockedUrls.size() == 0) return;
+      
+      StringBuilder msg = new StringBuilder();
+      blockedUrls.forEach(url -> msg.append("- `" + url + "`\n"));
+
+      logger.info("the server " + guild.getId() + " added the following to their block list:\n" + msg);
+
+      // feedback
+      new MessageBuilder().setContent("The following URL\\s have been added to the list:\n" + msg)
+                .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get());
+      
+    }); //event.getMessageAuthor().asUser().ifPresent
   }
 }

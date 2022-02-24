@@ -31,22 +31,20 @@ public class SuspiciousWordsListener implements MessageCreateListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
+      // if user is allowed - ignore their message
       if(event.getMessageAuthor().asUser().isPresent()) {
         if(Misc.isUserAllowed(event, event.getApi())) return;
       }
 
-      var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      
+      var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());    
       if(guild == null) return;
-      
-      logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
       // check embeds if there're any
       if(!event.getMessage().getEmbeds().isEmpty()) {
         event.getMessage().getEmbeds().forEach(embed -> {
           if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages()) {
             event.deleteMessage().exceptionally(ExceptionLogger.get());
-            log(guild, event);
+            log(guild, event);  // feedback
             return;            
           }
         });        
@@ -56,7 +54,7 @@ public class SuspiciousWordsListener implements MessageCreateListener {
       var suspiciousContent = checkString(event.getMessageContent(), guild);
       if(suspiciousContent && event.getChannel().canYouManageMessages()) {
         event.deleteMessage().exceptionally(ExceptionLogger.get());
-        log(guild, event);
+        log(guild, event);  // feedback
         return;
       }
     }

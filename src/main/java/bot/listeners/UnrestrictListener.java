@@ -18,8 +18,9 @@ public class UnrestrictListener implements MessageCreateListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+  public void onMessageCreate(MessageCreateEvent event) {    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permission for this command
       if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
@@ -31,12 +32,11 @@ public class UnrestrictListener implements MessageCreateListener {
         
         logger.info("the server " + guild.getId() + " is no longer restricted");
         
-        if(event.getChannel().canYouWrite()) {
-          new MessageBuilder().setContent("The server is no longer in restrict mode")
-                  .send(event.getChannel())
-                  .exceptionally(ExceptionLogger.get());      
-        }
+        // feedback
+        new MessageBuilder().setContent("The server is no longer in restrict mode")
+                .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get());   
       }
-    }
+    }); // event.getMessageAuthor().asUser().ifPresent
   }
 }

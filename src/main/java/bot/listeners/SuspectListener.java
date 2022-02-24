@@ -22,17 +22,17 @@ public class SuspectListener implements MessageCreateListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if(event.getMessageAuthor().asUser().isPresent()) {
+  public void onMessageCreate(MessageCreateEvent event) {    
+    event.getMessageAuthor().asUser().ifPresent(usr -> {
+      // user doesn't have permission for this command 
       if(!Misc.isUserAllowed(event, event.getApi())) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
 
-      logger.info("invoking " + this.getClass().getName() + " for server " + event.getServer().get());
-      
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
       var addedWords = new ArrayList<String>();
       
+      // collect the words
       Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' ')).split("\\s+"))
               .stream()
               .filter(word -> !word.isBlank())
@@ -44,19 +44,20 @@ public class SuspectListener implements MessageCreateListener {
       
       dbManager.upsert(guild);
       
-      if(addedWords.size() > 0) {
-        StringBuilder msg = new StringBuilder();
-        addedWords.forEach(word -> msg.append("**" + word + "**, "));
-        msg.deleteCharAt(msg.lastIndexOf(","));
-        
-        logger.info("the server " + guild.getId() + " added the following words to their suspicious list " + msg);
-        
-        if(event.getChannel().canYouWrite()) {
-          new MessageBuilder().setContent("Added the following word\\s to the list:\n" + msg)
-                  .send(event.getChannel())
-                  .exceptionally(ExceptionLogger.get());                
-        }
-      } 
-    }
+      // no words were added - bail;
+      if(addedWords.size() == 0) return;
+      
+      StringBuilder msg = new StringBuilder();
+      addedWords.forEach(word -> msg.append("**" + word + "**, "));
+      msg.deleteCharAt(msg.lastIndexOf(","));
+      
+      logger.info("the server " + guild.getId() + " added the following words to their suspicious list " + msg);
+      
+      // feedback
+      new MessageBuilder().setContent("Added the following word\\s to the list:\n" + msg)
+              .send(event.getChannel())
+              .exceptionally(ExceptionLogger.get());               
+       
+    }); //event.getMessageAuthor().asUser().ifPresent
   }
 }

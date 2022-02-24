@@ -30,16 +30,16 @@ public class UrlListener implements MessageCreateListener {
   public void onMessageCreate(MessageCreateEvent event) {
     if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
       var guild = dbManager.findGuildById(event.getServer().get().getIdAsString());
-      if (guild == null)
-        return;
+      if (guild == null) return;
 
+      // user is allowed - ignore their message
       if(event.getMessageAuthor().asUser().isPresent()) {
         if(Misc.isUserAllowed(event, event.getApi())) return;
       }
       
       if(guild.getBlockedUrls().isEmpty()) return;
       
-      if(Misc.containsUrl(event.getMessageContent()) && event.getChannel().canYouManageMessages()) {
+      if(Misc.containsUrl(event.getMessageContent())) {
         // filter all urls which matches guild.blockedUrl()
         final String urlRegex = "<?\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>?";
         var content = Arrays.asList(event.getMessageContent().split("\\s+"))
@@ -50,23 +50,24 @@ public class UrlListener implements MessageCreateListener {
                 .filter(url -> guild.getBlockedUrls().contains(url))
                 .collect(Collectors.toList()); 
         
-        if(content.size() > 0) {
-          event.deleteMessage().exceptionally(ExceptionLogger.get());
-          
-          logger.info("detected blocked url for server " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
-          
-          // log to the log channel
-          var logChannelId = guild.getLogChannelId();
-          if(logChannelId == null) return;
-          if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
-            var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
-            new MessageBuilder().setContent(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
-                    + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
-                    + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
-                    + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```contains forbidden url```")
-                .send(event.getServer().get().getTextChannelById(logChannelId).get())
-                .exceptionally(ExceptionLogger.get());
-          }
+        // no blocked urls detected - bail
+        if(content.size() == 0) return;
+        
+        event.deleteMessage().exceptionally(ExceptionLogger.get());
+        
+        logger.info("detected blocked url for server " + guild.getId() + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
+        
+        // feedback
+        var logChannelId = guild.getLogChannelId();
+        if(logChannelId == null) return;
+        if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
+          var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
+          new MessageBuilder().setContent(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+                  + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
+                  + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
+                  + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```contains forbidden url```")
+              .send(event.getServer().get().getTextChannelById(logChannelId).get())
+              .exceptionally(ExceptionLogger.get());
         }
       }
     } 
