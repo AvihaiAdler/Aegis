@@ -38,8 +38,11 @@ public class InfoListener implements MessageCreateListener {
 
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
 
-      if (event.getChannel().canYouWrite() && event.getChannel().canYouManageMessages()) {
-        event.deleteMessage().exceptionally(ExceptionLogger.get()); //delete user message
+      if (event.getChannel().canYouWrite()) {
+        
+        if(event.getChannel().canYouManageMessages()) {
+          event.deleteMessage().exceptionally(ExceptionLogger.get());         
+        }
         
         var embeds = Misc.getInfo(guild, event.getServer().get());
 

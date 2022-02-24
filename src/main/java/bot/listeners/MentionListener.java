@@ -30,7 +30,7 @@ public class MentionListener implements MessageCreateListener {
       
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
-      if(event.getChannel().canYouWrite()) {
+      if(event.getChannel().canYouWrite() && event.getChannel().canYouManageMessages()) {
         var embed = new EmbedBuilder()
                 .setTitle("Commands")
                 .addField("@" + event.getApi().getYourself().getName(), "dispaly the commads table")
