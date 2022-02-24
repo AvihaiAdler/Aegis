@@ -41,12 +41,6 @@ public class BlockListener implements MessageCreateListener {
               });
       dbManager.upsert(guild);
       
-      // delete the original urls provided by the user
-      event.deleteMessage().exceptionally(e -> {
-        logger.error("failed to delete command " + event.getMessageContent() + "\nreason: " + e.getCause());
-        return null;
-      });
-      
       // no urls were added - bail
       if (blockedUrls.size() == 0) return;
       
@@ -58,6 +52,8 @@ public class BlockListener implements MessageCreateListener {
       // feedback
       new MessageBuilder().setContent("The following URL\\s have been added to the list:\n" + msg)
                 .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get())
+                .thenRun(() -> event.getMessage().delete()) // delete the command to prevent clutter
                 .exceptionally(ExceptionLogger.get());
       
     }); //event.getMessageAuthor().asUser().ifPresent

@@ -39,9 +39,6 @@ public class InfoListener implements MessageCreateListener {
         logger.info("changed the name of " + event.getServer().get().getIdAsString() + " to "+ event.getServer().get().getName());
       }
       
-      // delete the original command to prevent clutter
-      event.deleteMessage().exceptionally(ExceptionLogger.get());
-      
       var embeds = Misc.getInfo(guild, event.getServer().get());
 
       // components (buttons) listener
@@ -98,8 +95,9 @@ public class InfoListener implements MessageCreateListener {
                       msg.delete().exceptionally(ExceptionLogger.get());
                     }
                   }))
+          .exceptionally(ExceptionLogger.get())
+          .thenRun(() -> event.getMessage().delete()) // remove the command to prevent clutter
           .exceptionally(ExceptionLogger.get());
-      
     }); //event.getMessageAuthor().asUser().ifPresent
   }
 }
