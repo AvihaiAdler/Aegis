@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -51,7 +52,10 @@ public class SuspectListener implements MessageCreateListener {
         logger.info("the server " + guild.getId() + " added the following words to their suspicious list " + msg);
         
         if(event.getChannel().canYouWrite()) {
-          event.getChannel().sendMessage("Added the following word\\s to the list:\n" + msg).exceptionally(ExceptionLogger.get());                
+          new MessageBuilder().setContent("Added the following word\\s to the list:\n" + msg)
+                              .send(event.getChannel())
+                              .exceptionally(ExceptionLogger.get());  
+//          event.getChannel().sendMessage("Added the following word\\s to the list:\n" + msg).exceptionally(ExceptionLogger.get());                
         }
       } 
     }

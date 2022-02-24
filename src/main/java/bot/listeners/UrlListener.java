@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -59,13 +60,20 @@ public class UrlListener implements MessageCreateListener {
           if(logChannelId == null) return;
           if(Misc.channelExists(logChannelId, event.getServer().get()) && Misc.canLog(logChannelId, event)) {
             var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
-            event.getServer().get()
-              .getChannelById(logChannelId).get()
-              .asServerTextChannel().get()
-              .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
-                            + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
-                            + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
-                            + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```contains forbidden url```");
+            new MessageBuilder().setContent(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+                    + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
+                    + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
+                    + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```contains forbidden url```")
+                .send(event.getServer().get().getTextChannelById(logChannelId).get())
+                .exceptionally(ExceptionLogger.get());
+            
+//            event.getServer().get()
+//              .getChannelById(logChannelId).get()
+//              .asServerTextChannel().get()
+//              .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
+//                            + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
+//                            + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
+//                            + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```contains forbidden url```");
           }
         }
       }

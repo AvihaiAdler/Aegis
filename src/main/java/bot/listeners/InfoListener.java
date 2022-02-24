@@ -47,7 +47,7 @@ public class InfoListener implements MessageCreateListener {
         
         // components (buttons) listener
         var itr = embeds.listIterator();
-
+        
         new MessageBuilder().setEmbed(itr.next())
                 .addComponents(ActionRow.of(Button.primary("previous", "◀️"), Button.primary("next", "▶️"), Button.primary("delete", "🗑️")))
                 .send(event.getChannel())

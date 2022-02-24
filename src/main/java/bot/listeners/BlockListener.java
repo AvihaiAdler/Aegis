@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -49,7 +50,10 @@ public class BlockListener implements MessageCreateListener {
         logger.info("the server " + guild.getId() + " added the following to their block list:\n" + msg);
         
         if(event.getChannel().canYouWrite()) {
-          event.getChannel().sendMessage("The following URL\\s have been added to the list:\n" + msg).exceptionally(ExceptionLogger.get());                 
+          new MessageBuilder().setContent("The following URL\\s have been added to the list:\n" + msg)
+                              .send(event.getChannel())
+                              .exceptionally(ExceptionLogger.get());
+//          event.getChannel().sendMessage("The following URL\\s have been added to the list:\n" + msg).exceptionally(ExceptionLogger.get());                 
         }
       } 
     }

@@ -2,6 +2,7 @@ package bot.listeners;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -39,7 +40,11 @@ public class MentionedListener implements MessageCreateListener {
                 .addField(guild.getPrefix() + "unsuspect <a list of words seperated by spaces>", event.getApi().getYourself().getName() + " will remove the words from the suspicious list")
                 .addField(guild.getPrefix() + "block <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will add the urls to the blocked list")
                 .addField(guild.getPrefix() + "unblock <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will removed the urls from the blocked list");
-        event.getChannel().sendMessage(embed).exceptionally(ExceptionLogger.get());
+        
+        new MessageBuilder().setEmbed(embed)
+                            .send(event.getChannel())
+                            .exceptionally(ExceptionLogger.get());
+//        event.getChannel().sendMessage(embed).exceptionally(ExceptionLogger.get());
       }
     }
   }
