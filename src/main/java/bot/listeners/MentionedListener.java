@@ -42,9 +42,8 @@ public class MentionedListener implements MessageCreateListener {
                 .addField(guild.getPrefix() + "unblock <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will removed the urls from the blocked list");
         
         new MessageBuilder().setEmbed(embed)
-                            .send(event.getChannel())
-                            .exceptionally(ExceptionLogger.get());
-//        event.getChannel().sendMessage(embed).exceptionally(ExceptionLogger.get());
+                .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get());
       }
     }
   }

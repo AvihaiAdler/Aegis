@@ -53,9 +53,8 @@ public class SuspectListener implements MessageCreateListener {
         
         if(event.getChannel().canYouWrite()) {
           new MessageBuilder().setContent("Added the following word\\s to the list:\n" + msg)
-                              .send(event.getChannel())
-                              .exceptionally(ExceptionLogger.get());  
-//          event.getChannel().sendMessage("Added the following word\\s to the list:\n" + msg).exceptionally(ExceptionLogger.get());                
+                  .send(event.getChannel())
+                  .exceptionally(ExceptionLogger.get());                
         }
       } 
     }

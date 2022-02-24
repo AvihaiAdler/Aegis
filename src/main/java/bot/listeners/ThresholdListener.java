@@ -36,11 +36,8 @@ public class ThresholdListener implements MessageCreateListener {
           logger.info("the server " + guild.getId() + " changed their prefix to " + guild.getPrefix());
           if(event.getChannel().canYouWrite()) {
             new MessageBuilder().setContent("Threshold is now **" + guild.getThreshold() + "**")
-                                .send(event.getChannel())
-                                .exceptionally(ExceptionLogger.get());  
-//            event.getChannel()
-//              .sendMessage("Threshold is now **" + guild.getThreshold() + "**")
-//              .exceptionally(ExceptionLogger.get());          
+                    .send(event.getChannel())
+                    .exceptionally(ExceptionLogger.get());           
           }
         }
       } catch (NumberFormatException e) {

@@ -51,9 +51,8 @@ public class BlockListener implements MessageCreateListener {
         
         if(event.getChannel().canYouWrite()) {
           new MessageBuilder().setContent("The following URL\\s have been added to the list:\n" + msg)
-                              .send(event.getChannel())
-                              .exceptionally(ExceptionLogger.get());
-//          event.getChannel().sendMessage("The following URL\\s have been added to the list:\n" + msg).exceptionally(ExceptionLogger.get());                 
+                  .send(event.getChannel())
+                  .exceptionally(ExceptionLogger.get());                
         }
       } 
     }

@@ -33,9 +33,8 @@ public class RestrictListener implements MessageCreateListener {
           logger.info("the server " + guild.getId() + " is now restricted");
           
           new MessageBuilder().setContent("The server is now in restrict mode")
-                              .send(event.getChannel())
-                              .exceptionally(ExceptionLogger.get());         
-//          event.getChannel().sendMessage("The server is now in restrict mode").exceptionally(ExceptionLogger.get());        
+                  .send(event.getChannel())
+                  .exceptionally(ExceptionLogger.get());             
         }
       }      
     }

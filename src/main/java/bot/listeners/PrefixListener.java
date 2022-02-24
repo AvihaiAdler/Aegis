@@ -34,9 +34,8 @@ public class PrefixListener implements MessageCreateListener {
         if(event.getChannel().canYouWrite()) {
           logger.info("changed the prefix for server " + guild.getId() + " to " + guild.getPrefix());
           new MessageBuilder().setContent("Prefix has been changed to **" + guild.getPrefix() + "**")
-                              .send(event.getChannel())
-                              .exceptionally(ExceptionLogger.get());
-//          event.getChannel().sendMessage("Prefix has been changed to **" + guild.getPrefix() + "**").exceptionally(ExceptionLogger.get());
+                  .send(event.getChannel())
+                  .exceptionally(ExceptionLogger.get());
         }
       }
     }

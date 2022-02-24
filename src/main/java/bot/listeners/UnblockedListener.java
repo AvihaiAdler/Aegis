@@ -50,11 +50,8 @@ public class UnblockedListener implements MessageCreateListener {
         logger.info("the server " + guild.getId() + " removed the following urls from their block list:\n" + msg);
         if(event.getChannel().canYouWrite()) {
           new MessageBuilder().setContent("Removed the following URL\\s from the list:\n" + msg)
-                              .send(event.getChannel())
-                              .exceptionally(ExceptionLogger.get()); 
-//          event.getChannel()
-//          .sendMessage("Removed the following URL\\s from the list:\n" + msg)
-//          .exceptionally(ExceptionLogger.get());                 
+                  .send(event.getChannel())
+                  .exceptionally(ExceptionLogger.get());                
         }
       } 
     }

@@ -53,14 +53,6 @@ public class SpamListener implements MessageCreateListener {
                     + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```possible spam```")
                 .send(event.getServer().get().getTextChannelById(logChannelId).get())
                 .exceptionally(ExceptionLogger.get());
-            
-//            event.getServer().get()
-//              .getChannelById(logChannelId).get()
-//              .asServerTextChannel().get()
-//              .sendMessage(DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now)
-//                            + " (UTC): a message from **" + event.getMessageAuthor().getDiscriminatedName() + "** `("
-//                            + event.getMessageAuthor().getIdAsString() + ")` was deleted by **"
-//                            + event.getApi().getYourself().getDiscriminatedName() + "**. Reason: ```possible spam```");
           }
         }
       }

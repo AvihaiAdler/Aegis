@@ -46,13 +46,6 @@ public class UpdateLogChannelListener implements MessageCreateListener {
                     .getName() + "**")
                 .send(event.getChannel())
                 .exceptionally(ExceptionLogger.get());
-//        event.getChannel()
-//            .sendMessage("Logs will appear at **#"
-//                + event.getServer().get()
-//                    .getChannelById(guild.getLogChannelId()).get()
-//                    .getName()
-//                + "**")
-//            .exceptionally(ExceptionLogger.get());
       }
     }
   }

@@ -52,11 +52,8 @@ public class UnsuspectListener implements MessageCreateListener {
         
         if(event.getChannel().canYouWrite()) {
           new MessageBuilder().setContent("Removed the following word\\s from the list:\n" + msg)
-                              .send(event.getChannel())
-                              .exceptionally(ExceptionLogger.get()); 
-//          event.getChannel()
-//            .sendMessage("Removed the following word\\s from the list:\n" + msg)
-//            .exceptionally(ExceptionLogger.get());                 
+                .send(event.getChannel())
+                .exceptionally(ExceptionLogger.get());               
         }
       } 
     }
