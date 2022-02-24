@@ -39,7 +39,7 @@ public class InfoListener implements MessageCreateListener {
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
 
       if (event.getChannel().canYouWrite() && event.getChannel().canYouManageMessages()) {
-        event.deleteMessage().exceptionally(ExceptionLogger.get()); //delete use message
+        event.deleteMessage().exceptionally(ExceptionLogger.get()); //delete user message
         
         var embeds = Misc.getInfo(guild, event.getServer().get());
 
@@ -49,12 +49,12 @@ public class InfoListener implements MessageCreateListener {
         new MessageBuilder().setEmbed(itr.next())
             .addComponents(ActionRow.of(Button.secondary("previous", "◀️"), Button.secondary("next", "▶️")))
             .send(event.getChannel())
-            .thenAccept(msg -> msg.addMessageComponentCreateListener(componentEvent -> {
-              switch (componentEvent.getMessageComponentInteraction().getCustomId()) {
+            .thenAccept(msg -> msg.addButtonClickListener(clickEvent -> {
+              switch (clickEvent.getButtonInteraction().getCustomId()) {
                 case "next":
                   if (itr.hasNext()) {
-                    var old = componentEvent.getMessageComponentInteraction().getMessage().getComponents();
-                    componentEvent.getMessageComponentInteraction()
+                    var old = clickEvent.getButtonInteraction().getMessage().getComponents();
+                    clickEvent.getButtonInteraction()
                         .createOriginalMessageUpdater()
                         .removeAllComponents()
                         .removeAllEmbeds()
@@ -63,13 +63,13 @@ public class InfoListener implements MessageCreateListener {
                         .update()
                         .exceptionally(ExceptionLogger.get());
                   } else {
-                    componentEvent.getMessageComponentInteraction().acknowledge().exceptionally(ExceptionLogger.get());
+                    clickEvent.getButtonInteraction().acknowledge().exceptionally(ExceptionLogger.get());
                   }
                   break;
                 case "previous":
                   if (itr.hasPrevious()) {
-                    var old = componentEvent.getMessageComponentInteraction().getMessage().getComponents();
-                    componentEvent.getMessageComponentInteraction()
+                    var old = clickEvent.getButtonInteraction().getMessage().getComponents();
+                    clickEvent.getButtonInteraction()
                         .createOriginalMessageUpdater()
                         .removeAllComponents()
                         .removeAllEmbeds()
@@ -78,12 +78,12 @@ public class InfoListener implements MessageCreateListener {
                         .update()
                         .exceptionally(ExceptionLogger.get());
                   } else {
-                    componentEvent.getMessageComponentInteraction().acknowledge().exceptionally(ExceptionLogger.get());
+                    clickEvent.getButtonInteraction().acknowledge().exceptionally(ExceptionLogger.get());
                   }
                   break;
                 case "delete":
                   if (event.getChannel().canYouManageMessages()) {
-                    componentEvent.getMessageComponentInteraction()
+                    clickEvent.getButtonInteraction()
                         .getMessage()
                         .delete()
                         .exceptionally(ExceptionLogger.get());
@@ -92,7 +92,11 @@ public class InfoListener implements MessageCreateListener {
               }
             })
                     .removeAfter(1, TimeUnit.MINUTES)
-                    .addRemoveHandler(() -> msg.delete().exceptionally(ExceptionLogger.get())))
+                    .addRemoveHandler(() -> {
+                      if(msg.canYouDelete()) {
+                        msg.delete().exceptionally(ExceptionLogger.get());
+                      }
+                    }))
             .exceptionally(ExceptionLogger.get());
       }
     }
