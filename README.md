@@ -48,7 +48,7 @@ The `info` command doen't work propery when trying to 'switch' pages. Most of th
 
 ### Future development
 
-- [ ] The `info` command can benefit from Buttons instead of Reactions
+- [x] The `info` command can benefit from Buttons instead of Reactions
 - [ ] Turning Aegis into a full fledged moderation bot
 
 ### Deployment
@@ -68,8 +68,8 @@ services:
     ports:
       - 443:443
     environment:
-      - MONGO_CRED=mongo_connection_string
-      - TOKEN=token
+      MONGO_CRED: mongo_connection_string
+      TOKEN: token
     depends_on:
       - mongodb
 
@@ -79,8 +79,8 @@ services:
     ports:
       - 27017:27017
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=username
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
 ```
 
 - run with: `docker-compose -f file_name.yaml up -d`
