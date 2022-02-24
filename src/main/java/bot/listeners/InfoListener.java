@@ -10,7 +10,6 @@ import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
-
 import bot.dal.DBManager;
 import bot.util.Misc;
 
@@ -39,26 +38,74 @@ public class InfoListener implements MessageCreateListener {
       
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
+      if(event.getChannel().canYouManageMessages()) {
+        event.getMessage().delete();
+      }
+      
       if (event.getChannel().canYouWrite()) {
-        var embed = Misc.getInfo(guild, event.getServer().get());
-//        var componentListener = new ComponentListener(embed);
-//        new MessageBuilder().setEmbed(embed.get(0))
-//                .addComponents(ActionRow.of(Button.primary("previous", "◀️"), Button.primary("next", "▶️")))
-//                .send(event.getChannel())
-//                .thenAccept(msg -> msg.addMessageComponentCreateListener(componentListener).removeAfter(2, TimeUnit.MINUTES))
-//                .exceptionally(ExceptionLogger.get());
-//        event.getChannel().sendMessage(embed.get(0)).thenAccept(msg -> {
-//          msg.addMessageComponentCreateListener(componentListener).removeAfter(2, TimeUnit.MINUTES);
-//        })
+        var embeds = Misc.getInfo(guild, event.getServer().get());
+        
+        // components (buttons) listener
+        var itr = embeds.listIterator();
 
-        var reactionListener = new ServerInfoReactionListener(embed);
-        event.getChannel().sendMessage(embed.get(0)).thenAccept(msg -> { 
-          msg.addReactions("◀️", "▶️").exceptionally(ExceptionLogger.get());
+        new MessageBuilder().setEmbed(itr.next())
+                .addComponents(ActionRow.of(Button.primary("previous", "◀️"), Button.primary("next", "▶️"), Button.primary("delete", "🗑️")))
+                .send(event.getChannel())
+                .thenAccept(msg -> msg.addMessageComponentCreateListener(componentEvent -> {
+                  switch(componentEvent.getMessageComponentInteraction().getCustomId()) {
+                    case "next":
+                      if(itr.hasNext()) {
+                        var old = componentEvent.getMessageComponentInteraction().getMessage().getComponents();
+                        componentEvent.getMessageComponentInteraction()
+                                  .createOriginalMessageUpdater()
+                                  .removeAllComponents()
+                                  .removeAllEmbeds()
+                                  .addEmbed(itr.next())
+                                  .addComponents(old.get(0))
+                                  .update()
+                                  .exceptionally(ExceptionLogger.get());             
+                      } else {
+                        componentEvent.getMessageComponentInteraction().acknowledge().exceptionally(ExceptionLogger.get());
+                      }
+                      break;
+                    case "previous":
+                      if(itr.hasPrevious()) {
+                        var old = componentEvent.getMessageComponentInteraction().getMessage().getComponents();
+                        componentEvent.getMessageComponentInteraction()
+                                  .createOriginalMessageUpdater()
+                                  .removeAllComponents()
+                                  .removeAllEmbeds()
+                                  .addEmbed(itr.previous())
+                                  .addComponents(old.get(0))
+                                  .update()
+                                  .exceptionally(ExceptionLogger.get());             
+                      } else {
+                        componentEvent.getMessageComponentInteraction().acknowledge().exceptionally(ExceptionLogger.get());
+                      }
+                      break;
+                    case "delete":  
+                      if(event.getChannel().canYouManageMessages()) {
+                        componentEvent.getMessageComponentInteraction()
+                                      .getMessage()
+                                      .delete()
+                                      .exceptionally(ExceptionLogger.get());                        
+                      }
+                      break;         
+                  }
+                })
+                .removeAfter(2, TimeUnit.MINUTES))
+                .exceptionally(ExceptionLogger.get());
           
-          // reaction listener
-          msg.addReactionAddListener(reactionListener).removeAfter(2, TimeUnit.MINUTES);
-        })
-        .exceptionally(ExceptionLogger.get());
+        
+
+//        var reactionListener = new ServerInfoReactionListener(embeds);
+//        event.getChannel().sendMessage(embeds.get(0)).thenAccept(msg -> { 
+//          msg.addReactions("◀️", "▶️").exceptionally(ExceptionLogger.get());
+//          
+//          // reaction listener
+//          msg.addReactionAddListener(reactionListener::onReactionAdd).removeAfter(2, TimeUnit.MINUTES);
+//        })
+//        .exceptionally(ExceptionLogger.get());
       }
     }
   }

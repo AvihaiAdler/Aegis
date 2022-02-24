@@ -1,6 +1,8 @@
 package bot.listeners;
 
 import java.util.List;
+import java.util.ListIterator;
+
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.interaction.MessageComponentCreateEvent;
 import org.javacord.api.listener.interaction.MessageComponentCreateListener;
@@ -8,11 +10,11 @@ import org.javacord.api.util.logging.ExceptionLogger;
 
 public class ComponentListener implements MessageComponentCreateListener {
   private List<EmbedBuilder> embeds;
-  private int index;
+  private ListIterator<EmbedBuilder> itr;
   
   public ComponentListener(List<EmbedBuilder> embeds) {
     this.embeds = embeds;
-    index = 0;
+    itr = this.embeds.listIterator();
   }
   
   @Override
@@ -21,40 +23,32 @@ public class ComponentListener implements MessageComponentCreateListener {
 
     switch(interactionId) {
       case "previous":
-        if(index > 0) {
-          var old = event.getMessageComponentInteraction().getMessage();
+        if(itr.hasPrevious()) {
+          var old = event.getMessageComponentInteraction().getMessage().getComponents();
           event.getMessageComponentInteraction()
-                .createImmediateResponder()
+                .createOriginalMessageUpdater()
+                .removeAllComponents()
                 .removeAllEmbeds()
-                .addEmbed(embeds.get(index--))
-                .addComponents(old.getComponents().get(0))
-                .respond()
-                .exceptionally(ExceptionLogger.get());
-//          event.getMessageComponentInteraction().getMessage()
-//              .createUpdater()
-//              .removeAllEmbeds()
-//              .addEmbed(embeds.get(index--))
-//              .addComponents(old.getComponents().get(0))
-//              .replaceMessage()
-//              .exceptionally(ExceptionLogger.get());
+                .addEmbed(itr.previous())
+                .addComponents(old.get(0))
+                .update()
+                .exceptionally(ExceptionLogger.get());             
+        } else {
+          event.getMessageComponentInteraction().acknowledge();
         }
       case "next":
-        if(index < embeds.size() - 1) {
-          var old = event.getMessageComponentInteraction().getMessage();
+        if(itr.hasNext()) {
+          var old = event.getMessageComponentInteraction().getMessage().getComponents();
           event.getMessageComponentInteraction()
-                .createImmediateResponder()
+                .createOriginalMessageUpdater()
+                .removeAllComponents()
                 .removeAllEmbeds()
-                .addEmbed(embeds.get(index++))
-                .addComponents(old.getComponents().get(0))
-                .respond()
-                .exceptionally(ExceptionLogger.get());
-//          event.getMessageComponentInteraction().getMessage()
-//              .createUpdater()
-//              .removeAllEmbeds()
-//              .addEmbed(embeds.get(index++))
-//              .addComponents(old.getComponents().get(0))
-//              .replaceMessage()
-//              .exceptionally(ExceptionLogger.get());
+                .addEmbed(itr.next())
+                .addComponents(old.get(0))
+                .update()
+                .exceptionally(ExceptionLogger.get());             
+        } else {
+          event.getMessageComponentInteraction().acknowledge();
         }
         break;
       default:

@@ -111,7 +111,7 @@ public class Main {
     // mention listener
     var mentionedListener = new MentionedListener(dbManager);
     discordApi.addMessageCreateListener(mentionedListener::onMessageCreate);
-
+    
     // Commands listeners
     discordApi.addMessageCreateListener(event -> {
       if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
