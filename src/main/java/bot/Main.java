@@ -16,7 +16,7 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import bot.dal.DBManager;
 import bot.listeners.BlockListener;
 import bot.listeners.InfoListener;
-import bot.listeners.MentionedListener;
+import bot.listeners.MentionListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
 import bot.listeners.SpamListener;
@@ -109,7 +109,7 @@ public class Main {
     discordApi.addMessageCreateListener(urlListener::onMessageCreate);
 
     // mention listener
-    var mentionedListener = new MentionedListener(dbManager);
+    var mentionedListener = new MentionListener(dbManager);
     discordApi.addMessageCreateListener(mentionedListener::onMessageCreate);
     
     // Commands listeners

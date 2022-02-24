@@ -1,8 +1,12 @@
 package bot.listeners;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.component.ActionRow;
+import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -10,11 +14,11 @@ import org.javacord.api.util.logging.ExceptionLogger;
 
 import bot.dal.DBManager;
 
-public class MentionedListener implements MessageCreateListener {
-  private Logger logger = LogManager.getLogger(MentionedListener.class);
+public class MentionListener implements MessageCreateListener {
+  private Logger logger = LogManager.getLogger(MentionListener.class);
   private DBManager dbManager;
 
-  public MentionedListener(DBManager dbManager) {
+  public MentionListener(DBManager dbManager) {
     this.dbManager = dbManager;
   }
 
@@ -41,9 +45,18 @@ public class MentionedListener implements MessageCreateListener {
                 .addField(guild.getPrefix() + "block <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will add the urls to the blocked list")
                 .addField(guild.getPrefix() + "unblock <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will removed the urls from the blocked list");
         
-        new MessageBuilder().setEmbed(embed)
-                .send(event.getChannel())
-                .exceptionally(ExceptionLogger.get());
+          event.getMessage().delete().exceptionally(ExceptionLogger.get());
+          new MessageBuilder().setEmbed(embed)
+          .addComponents(ActionRow.of(Button.danger("delete", "🗑️")))
+          .send(event.getChannel())
+          .thenAccept(msg -> msg
+                  .addButtonClickListener(clickEvent -> clickEvent
+                          .getButtonInteraction()
+                          .getMessage()
+                          .delete()
+                          .exceptionally(ExceptionLogger.get()))
+                  .removeAfter(1, TimeUnit.MINUTES))
+          .exceptionally(ExceptionLogger.get());
       }
     }
   }
