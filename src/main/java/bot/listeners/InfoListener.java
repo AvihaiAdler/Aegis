@@ -38,19 +38,16 @@ public class InfoListener implements MessageCreateListener {
 
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
 
-      if (event.getChannel().canYouManageMessages()) {
-        event.getMessage().delete();
-      }
-
-      if (event.getChannel().canYouWrite()) {
+      if (event.getChannel().canYouWrite() && event.getChannel().canYouManageMessages()) {
+        event.deleteMessage().exceptionally(ExceptionLogger.get()); //delete use message
+        
         var embeds = Misc.getInfo(guild, event.getServer().get());
 
         // components (buttons) listener
         var itr = embeds.listIterator();
 
         new MessageBuilder().setEmbed(itr.next())
-            .addComponents(ActionRow.of(Button.primary("previous", "◀️"), Button.primary("next", "▶️"),
-                Button.danger("delete", "🗑️")))
+            .addComponents(ActionRow.of(Button.secondary("previous", "◀️"), Button.secondary("next", "▶️")))
             .send(event.getChannel())
             .thenAccept(msg -> msg.addMessageComponentCreateListener(componentEvent -> {
               switch (componentEvent.getMessageComponentInteraction().getCustomId()) {
