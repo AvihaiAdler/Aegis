@@ -30,7 +30,7 @@ public class MentionListener implements MessageCreateListener {
       
       logger.info("invoking " + this.getClass().getName() + " for server " + guild.getId());
       
-      if(event.getChannel().canYouWrite() && event.getChannel().canYouManageMessages()) {
+      if(event.getChannel().canYouWrite()) {
         var embed = new EmbedBuilder()
                 .setTitle("Commands")
                 .addField("@" + event.getApi().getYourself().getName(), "dispaly the commads table")
@@ -45,7 +45,10 @@ public class MentionListener implements MessageCreateListener {
                 .addField(guild.getPrefix() + "block <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will add the urls to the blocked list")
                 .addField(guild.getPrefix() + "unblock <a list of urls seperated by spaces>", event.getApi().getYourself().getName() + " will removed the urls from the blocked list");
         
-          event.getMessage().delete().exceptionally(ExceptionLogger.get());
+          if(event.getChannel().canYouManageMessages()) {
+            event.getMessage().delete().exceptionally(ExceptionLogger.get());            
+          }
+          
           new MessageBuilder().setEmbed(embed)
           .addComponents(ActionRow.of(Button.danger("delete", "🗑️")))
           .send(event.getChannel())
@@ -55,7 +58,12 @@ public class MentionListener implements MessageCreateListener {
                           .getMessage()
                           .delete()
                           .exceptionally(ExceptionLogger.get()))
-                  .removeAfter(1, TimeUnit.MINUTES))
+                  .removeAfter(1, TimeUnit.MINUTES)
+                  .addRemoveHandler(() -> {
+                    if(msg.canYouDelete()) {
+                      msg.delete().exceptionally(ExceptionLogger.get());
+                    }
+                  }))
           .exceptionally(ExceptionLogger.get());
       }
     }
