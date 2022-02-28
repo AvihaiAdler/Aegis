@@ -1,4 +1,4 @@
-package bot.listeners;
+package bot.listeners.Impl;
 
 import java.util.concurrent.TimeUnit;
 import org.javacord.api.entity.message.MessageBuilder;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import bot.dal.GuildDao;
+import bot.listeners.InfoListener;
 import bot.util.LoggerWrapper;
 import bot.util.Loglevel;
 import bot.util.Misc;
@@ -113,8 +114,8 @@ public class InfoListenerImpl implements InfoListener {
                 .removeAfter(1, TimeUnit.MINUTES)
                 .addRemoveHandler(() -> {
                   msg.delete().exceptionally(e -> {
-                    loggerWrapper.log(Loglevel.ERROR, "failed to delete an info embed in " + guild.getLogChannelId() + " server: "
-                            + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+                    loggerWrapper.log(Loglevel.ERROR, "failed to delete an info embed with a handler in " + guild.getLogChannelId() + " server: "
+                            + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage() + " embed deleted manually");
                     return null;
                   });
                 }))

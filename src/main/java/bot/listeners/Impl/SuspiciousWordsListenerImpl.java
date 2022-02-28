@@ -1,4 +1,4 @@
-package bot.listeners;
+package bot.listeners.Impl;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.data.GuildEntity;
+import bot.listeners.SuspiciousWordsListener;
 import bot.util.LoggerWrapper;
 import bot.util.Loglevel;
 import bot.util.MessageSender;

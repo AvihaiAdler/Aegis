@@ -1,4 +1,4 @@
-package bot.listeners;
+package bot.listeners.Impl;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -6,6 +6,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
+import bot.listeners.BlockListener;
 import bot.util.LoggerWrapper;
 import bot.util.Loglevel;
 import bot.util.MessageSender;
@@ -61,7 +62,7 @@ public class BlockListenerImpl implements BlockListener {
         loggerWrapper.log(Loglevel.INFO, "the server " + updated.getId() + " added the following to their block list:\n" + msg);
 
         // feedback
-        messageSender.send(event.getChannel(), "The following URLs have been added into the list:\n", updated)
+        messageSender.send(event.getChannel(), "The following URLs have been added into the list:\n" + msg, updated)
                 .thenRun(() -> event.getMessage().delete()) // delete the command to prevent clutter
                 .exceptionally(e -> {
                   loggerWrapper.log(Loglevel.ERROR,

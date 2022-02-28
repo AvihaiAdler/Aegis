@@ -1,4 +1,4 @@
-package bot.listeners;
+package bot.listeners.Impl;
 
 import java.util.concurrent.TimeUnit;
 import org.javacord.api.entity.message.MessageBuilder;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import bot.dal.GuildDao;
+import bot.listeners.MentionListener;
 import bot.util.LoggerWrapper;
 import bot.util.Loglevel;
 
@@ -67,8 +68,8 @@ public class MentionListenerImpl implements MentionListener {
                         }))
                 .removeAfter(1, TimeUnit.MINUTES)
                 .addRemoveHandler(() -> msg.delete().exceptionally(e -> {
-                  loggerWrapper.log(Loglevel.ERROR, "failed to delete a command embed in " + guild.getLogChannelId() + " server: "
-                          + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+                  loggerWrapper.log(Loglevel.ERROR, "failed to delete a command embed with a hadler in " + guild.getLogChannelId() + " server: "
+                          + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage() + " user deleted manually");
                   return null;
                 })))
         .exceptionally(e -> {

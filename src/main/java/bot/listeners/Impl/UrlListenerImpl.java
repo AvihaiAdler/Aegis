@@ -1,4 +1,4 @@
-package bot.listeners;
+package bot.listeners.Impl;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -11,6 +11,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
+import bot.listeners.UrlListener;
 import bot.util.LoggerWrapper;
 import bot.util.Loglevel;
 import bot.util.MessageSender;
@@ -72,7 +73,8 @@ public class UrlListenerImpl implements UrlListener {
                 + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
 
         // feedback
-        if (!Misc.channelExists(guild.getLogChannelId(), event.getServer().get())) return;
+        var logChannelId = guild.getLogChannelId();
+        if (!Misc.channelExists(logChannelId, event.getServer().get())) return;
         
         var now = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
         var msg = DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now) + " (UTC): a message from **"
@@ -80,7 +82,7 @@ public class UrlListenerImpl implements UrlListener {
                 + ")` in **#" + event.getServerTextChannel().get().getName()
                 + "** was deleted by **" + event.getApi().getYourself().getDiscriminatedName()
                 + "**. Reason: ```contains forbidden url```";
-        messageSender.send(event.getChannel(), msg, guild);
+        messageSender.send(event.getServer().get().getTextChannelById(logChannelId).get(), msg, guild);
       }); // guild.ifPresent
     }
   }

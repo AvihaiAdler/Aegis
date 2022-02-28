@@ -1,12 +1,14 @@
-package bot.listeners;
+package bot.listeners.Impl;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
+import bot.listeners.SpamListener;
 import bot.util.LoggerWrapper;
 import bot.util.Loglevel;
 import bot.util.MessageSender;
@@ -17,6 +19,21 @@ public class SpamListenerImpl implements SpamListener {
   private LoggerWrapper loggerWrapper;
   private GuildDao guildDao;
   private MessageSender messageSender;
+  
+  @Autowired
+  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
+    this.loggerWrapper = loggerWrapper;
+  }
+  
+  @Autowired
+  public void setGuildDao(GuildDao guildDao) {
+    this.guildDao = guildDao;
+  }
+  
+  @Autowired
+  public void setMessageSender(MessageSender messageSender) {
+    this.messageSender = messageSender;
+  }
   
   @Override
   public void onMessageCreate(MessageCreateEvent event) {

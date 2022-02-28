@@ -5,9 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
@@ -16,9 +13,7 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import bot.dal.GuildDao;
-import bot.data.GuildEntity;
 import bot.listeners.BlockListener;
 import bot.listeners.InfoListener;
 import bot.listeners.MentionListener;
@@ -142,7 +137,7 @@ public class Config {
   }
   
   @Bean
-  public DiscordApi config() {
+  public DiscordApi discordApi() {
     final Map<String, MessageCreateListener> commands = Collections.synchronizedMap(new HashMap<>());
 
     var discordApi = new DiscordApiBuilder()
