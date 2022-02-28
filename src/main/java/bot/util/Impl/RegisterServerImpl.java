@@ -50,7 +50,7 @@ public class RegisterServerImpl implements RegisterServer {
     final var s = server;
     guildDao.findById(server.getIdAsString()).ifPresentOrElse(guild -> {
       // create a logging channel
-      guild.setLogChannelId(channelCreator.create(s, event.getApi().getYourself().getName()));
+      guild.setLogChannelId(channelCreator.create(s, event.getApi().getYourself().getName() + "-log"));
       
       // register the server
       var entity = guildDao.save(guild);
@@ -59,7 +59,7 @@ public class RegisterServerImpl implements RegisterServer {
     }, 
     () -> {
       // create a logging channel
-      var logChannelId = channelCreator.create(s, event.getApi().getYourself().getName());
+      var logChannelId = channelCreator.create(s, event.getApi().getYourself().getName() + "-log");
       
       // register the server
       var entity = guildDao.save(new GuildEntity(s.getIdAsString(), s.getName(), logChannelId));
