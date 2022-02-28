@@ -29,8 +29,13 @@ public class ChannelCreatorImpl implements ChannelCreator {
                         + " (" + server.getId() + ")" + "\nreason: " + e.getMessage());
                 return null;
         })
-        .join()
-        .getIdAsString();
+        .thenApply(ch -> ch.getIdAsString())
+        .exceptionally(e -> {
+                loggerWrapper.log(Loglevel.ERROR, "failed to get the id of a logging channel for server " + server.getName()
+                        + " (" + server.getId() + ")" + "\nreason: " + e.getMessage());
+                return null;
+        })
+        .join();
     }
     return channels.get(0).getIdAsString();
   }
