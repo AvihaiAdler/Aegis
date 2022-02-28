@@ -3,9 +3,10 @@ package bot.data;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import org.bson.codecs.pojo.annotations.BsonId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-
+@Document(collection = "guilds")
 public class GuildEntity {
   private String id;
   private String logChannelId;
@@ -35,7 +36,7 @@ public class GuildEntity {
     return id;
   }
 
-  @BsonId
+  @Id
   public void setId(String id) {
     this.id = id;
   }

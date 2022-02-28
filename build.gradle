@@ -1,9 +1,11 @@
 plugins {
+  id 'org.springframework.boot' version '2.6.4'
+  id 'io.spring.dependency-management' version '1.0.11.RELEASE'
   id 'java'
 }
 
 group = 'VroomVroom'
-version = '0.0.3'
+version = '0.0.4'
 sourceCompatibility = '16'
 targetCompatibility = '16'
 
@@ -15,28 +17,11 @@ repositories {
 }
 
 dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.javacord:javacord:3.4.0'
   implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
   implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
-  implementation 'org.mongodb:mongodb-driver:3.12.10'
 }
 
-jar {
-    manifest {
-        duplicatesStrategy = 'include'
-        attributes(
-                'Main-Class': 'bot.Main'
-        )
-    }
-    from (
-        configurations.runtimeClasspath.collect { 
-          it.isDirectory() ? it : zipTree(it) 
-        }
-    ) {
-            exclude 'META-INF/MANIFEST.MF'
-            exclude 'META-INF/*.SF'
-            exclude 'META-INF/*.DSA'
-            exclude 'META-INF/*.RSA'
-    }
- }
 

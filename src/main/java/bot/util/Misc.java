@@ -5,56 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.entity.server.Server;
-import org.javacord.api.event.Event;
 import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.event.server.ServerEvent;
-import bot.dal.DBManager;
 import bot.data.GuildEntity;
 
 public class Misc {
-  private static final Logger logger = LogManager.getLogger(Misc.class);
-
-  public static void registerServer(Event event, final DBManager dbManager) {
-    Server server = null;
-    if (event instanceof ServerEvent) {
-      server = ((ServerEvent) event).getServer();
-    } else if (event instanceof MessageCreateEvent) {
-      server = ((MessageCreateEvent) event).getServer().get();
-    } else {
-      logger.error("unsupported event detected");
-    }
-
-    if (dbManager.findGuildById(server.getIdAsString()) == null) {
-      ServerTextChannel channel = null;
-      var loggingChannelName = event.getApi().getYourself().getName().toLowerCase() + "-log";
-
-      if (!server.getChannelsByName(loggingChannelName).isEmpty()) {
-        channel = server
-            .getChannelsByName(loggingChannelName).get(0)
-            .asServerTextChannel().get();
-      } else {
-        if (server.canYouCreateChannels()) {
-          channel = server
-              .createTextChannelBuilder()
-              .setName(loggingChannelName)
-              .create()
-              .join();
-        }
-      }
-
-      dbManager.upsert(
-          new GuildEntity(server.getIdAsString(), server.getName(), channel == null ? null : channel.getIdAsString()));
-      logger.info("registered " + dbManager.findGuildById(server.getIdAsString()).getGuildName());
-    }
-  }
-
   public static boolean containsUrl(String potentialUrl) {
     final String urlRegex = "<?\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>?";
     if (potentialUrl == null)
@@ -92,17 +50,6 @@ public class Misc {
     if (channelsId.contains(channelId))
       return true;
     return false;
-  }
-
-  public static boolean canLog(String channelId, MessageCreateEvent event) {
-    if (event.getServer().get().getChannelById(channelId).isEmpty())
-      return false;
-    if (!event.getServer().get().getChannelById(channelId).get().canYouSee())
-      return false;
-    if (event.getServer().get().getChannelById(channelId).get().asTextChannel().isEmpty())
-      return false;
-
-    return true;
   }
 
   public static List<EmbedBuilder> getInfo(GuildEntity guild, Server server) {
