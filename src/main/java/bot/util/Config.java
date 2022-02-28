@@ -147,7 +147,8 @@ public class Config {
             Intent.DIRECT_MESSAGE_REACTIONS,
             Intent.GUILD_INVITES,
             Intent.GUILD_WEBHOOKS,
-            Intent.GUILD_MESSAGE_TYPING)
+            Intent.GUILD_MESSAGE_TYPING,
+            Intent.GUILD_WEBHOOKS)
         .login()
         .join();
     loggerWrapper.log(Loglevel.INFO, discordApi.getYourself().getDiscriminatedName() + " successfuly logged in");
