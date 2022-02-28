@@ -1,15 +1,20 @@
 package bot.util.Impl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.server.Server;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import bot.util.ChannelCreator;
+import bot.util.LoggerWrapper;
+import bot.util.Loglevel;
 
 @Component
 public class ChannelCreatorImpl implements ChannelCreator {
-  private final Logger logger = LogManager.getLogger(RegisterServerImpl.class);
+  private LoggerWrapper loggerWrapper;
+  
+  @Autowired
+  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
+    this.loggerWrapper = loggerWrapper;
+  }
   
   @Override
   public String create(Server server, String channelName) {
@@ -20,8 +25,9 @@ public class ChannelCreatorImpl implements ChannelCreator {
         .setName(channelName)
         .create()
         .exceptionally(e -> {
-          logger.error("failed to create a logging channel for server " + server.getId());
-          return null;
+                loggerWrapper.log(Loglevel.ERROR, "failed to create a logging channel for server " + server.getName()
+                        + " (" + server.getId() + ")" + "\nreason: " + e.getMessage());
+                return null;
         })
         .join()
         .getIdAsString();
