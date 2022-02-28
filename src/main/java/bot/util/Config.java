@@ -201,9 +201,7 @@ public class Config {
               listener.onMessageCreate(event);
             }
           }
-        }, () -> {  // guild doesn't exists in the DB
-          registerServer.registerServer(event);
-        }); // guild.ifPresent  
+        }, () ->/* guild doesn't exists in the DB*/ registerServer.registerServer(event)); // guild.ifPresent  
       }
     }); // discordApi.addMessageCreateListener
     return discordApi;
