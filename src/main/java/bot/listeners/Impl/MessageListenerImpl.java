@@ -52,9 +52,9 @@ public class MessageListenerImpl implements MessageListener {
       
       // fire for non ADMINISTRATORS
       // user is allowed - ignore their message
-      event.getMessageAuthor().asUser().ifPresent(usr -> {
-        if(Misc.isUserAllowed(event)) return;      
-      });
+      if(event.getMessageAuthor().asUser().isPresent() && Misc.isUserAllowed(event)) {
+        return;              
+      }
       
       spamListener.onMessageCreate(event, guild);
       
