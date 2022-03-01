@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<include resource="org/springframework/boot/logging/logback/base.xml" />
-	<logger name="org.springframework.web" level="TRACE" />
+	<logger name="org.springframework.web" level="INFO" />
+	<logger name="org.mongodb.driver" level="DEBUG"></logger>
+	
   <property name="LOG_ROOT" value="./log" />
   <property name="LOG_FILE_NAME" value="aegis" />
 
