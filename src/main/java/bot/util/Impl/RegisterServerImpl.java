@@ -1,24 +1,23 @@
 package bot.util.Impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.Event;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.event.server.ServerEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import bot.dal.GuildDao;
 import bot.data.GuildEntity;
 import bot.util.ChannelCreator;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.RegisterServer;
 
 @Component
 public class RegisterServerImpl implements RegisterServer {
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private ChannelCreator channelCreator;
-  private LoggerWrapper loggerWrapper;
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -30,11 +29,6 @@ public class RegisterServerImpl implements RegisterServer {
     this.channelCreator = channelCreator;
   }
   
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
-  
   @Override
   public void registerServer(Event event) {
     Server server = null;
@@ -43,7 +37,7 @@ public class RegisterServerImpl implements RegisterServer {
     } else if (event instanceof MessageCreateEvent) {
       server = ((MessageCreateEvent) event).getServer().get();
     } else {
-      loggerWrapper.log(Loglevel.ERROR, "unsupported event detected");
+      logger.error("unsupported event detected");
       return;
     }
 
@@ -55,7 +49,7 @@ public class RegisterServerImpl implements RegisterServer {
       // register the server
       var entity = guildDao.save(guild);
       
-      loggerWrapper.log(Loglevel.INFO, "registered server: " + entity.getGuildName() + "(" + entity.getId() + ")" + " logging channel: " + entity.getLogChannelId());
+      logger.info("registered server: " + entity.getGuildName() + "(" + entity.getId() + ")" + " logging channel: " + entity.getLogChannelId());
     }, 
     () -> {
       // create a logging channel
@@ -64,7 +58,7 @@ public class RegisterServerImpl implements RegisterServer {
       // register the server
       var entity = guildDao.save(new GuildEntity(s.getIdAsString(), s.getName(), logChannelId));
       
-      loggerWrapper.log(Loglevel.INFO, "registered server: " + entity.getGuildName() + "(" + entity.getId() + ")" + " logging channel: " + entity.getLogChannelId());
+      logger.info("registered server: " + entity.getGuildName() + "(" + entity.getId() + ")" + " logging channel: " + entity.getLogChannelId());
     });
   }
 }

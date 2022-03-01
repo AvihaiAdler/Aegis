@@ -1,25 +1,20 @@
 package bot.listeners.Impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.listeners.UnrestrictListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class UnrestrictListenerImpl implements UnrestrictListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -42,7 +37,7 @@ public class UnrestrictListenerImpl implements UnrestrictListener {
           guild.setRestricted(false);
           var updated = guildDao.save(guild);
           
-          loggerWrapper.log(Loglevel.INFO, "the server " + updated.getGuildName() + " (" + updated.getId() + ")" + " is no longer restricted");
+          logger.info("the server " + updated.getGuildName() + " (" + updated.getId() + ")" + " is no longer restricted");
           
           // feedback
           messageSender.send(event.getChannel(), "The server is no longer in restrict mode", updated);  

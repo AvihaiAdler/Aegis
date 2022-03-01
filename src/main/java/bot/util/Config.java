@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
@@ -31,7 +34,7 @@ import bot.listeners.UrlListener;
 
 @Configuration
 public class Config {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private RegisterServer registerServer;
   
@@ -54,11 +57,6 @@ public class Config {
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
     this.guildDao = guildDao;
-  }
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
   }
   
   @Autowired
@@ -151,7 +149,7 @@ public class Config {
             Intent.GUILD_WEBHOOKS)
         .login()
         .join();
-    loggerWrapper.log(Loglevel.INFO, discordApi.getYourself().getDiscriminatedName() + " successfuly logged in");
+    logger.info(discordApi.getYourself().getDiscriminatedName() + " successfuly logged in");
   
     discordApi.setMessageCacheSize(30, 60 * 10); // store only 30 messages per channel for 10 minutes
     discordApi.updateActivity(ActivityType.WATCHING, "messages");
@@ -167,14 +165,14 @@ public class Config {
     commands.put("threshold", thresholdListener);
     commands.put("logto", updateLogChannelListener);
     commands.put("info", infoListener);
-    loggerWrapper.log(Loglevel.INFO, "added command listeners");
+    logger.info("added command listeners");
 
     // Server leave listener
     discordApi.addServerLeaveListener(leaveEvent -> {
       final var serverId = leaveEvent.getServer().getIdAsString();
       guildDao.findById(serverId).ifPresent(guild -> guildDao.delete(guild));
       
-      loggerWrapper.log(Loglevel.INFO, "Left " + serverId);
+      logger.info("Left " + serverId);
     });
   
     // Server joined listener

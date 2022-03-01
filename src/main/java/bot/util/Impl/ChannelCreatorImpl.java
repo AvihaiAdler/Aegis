@@ -1,42 +1,38 @@
 package bot.util.Impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.server.Server;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import bot.util.ChannelCreator;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 
 @Component
 public class ChannelCreatorImpl implements ChannelCreator {
-  private LoggerWrapper loggerWrapper;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
+  private Logger logger = LogManager.getLogger();
   
   @Override
   public String create(Server server, String channelName) {
-    // create the channel
-    var channels = server.getChannelsByName(channelName);
+    var name = channelName.toLowerCase();
+    var channels = server.getChannelsByName(name);
+    
     if (channels.isEmpty()) {
       return server.createTextChannelBuilder()
-        .setName(channelName)
-        .create()
+        .setName(name)
+        .create() // create the channel
         .exceptionally(e -> {
-                loggerWrapper.log(Loglevel.ERROR, "failed to create a logging channel for server " + server.getName()
-                        + " (" + server.getId() + ")" + "\nreason: " + e.getMessage());
+                logger.error("failed to create a logging channel for server " + server.getName()
+                        + " (" + server.getId() + ")" + "\nreason: " + e.getCause());
                 return null;
         })
         .thenApply(ch -> ch.getIdAsString())
         .exceptionally(e -> {
-                loggerWrapper.log(Loglevel.ERROR, "failed to get the id of a logging channel for server " + server.getName()
-                        + " (" + server.getId() + ")" + "\nreason: " + e.getMessage());
+                logger.error("failed to get the id of a logging channel for server " + server.getName()
+                        + " (" + server.getId() + ")" + "\nreason: " + e.getCause());
                 return null;
         })
         .join();
     }
+    
     return channels.get(0).getIdAsString();
   }
 }

@@ -7,26 +7,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.listeners.UrlListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class UrlListenerImpl implements UrlListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
 
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -64,12 +59,12 @@ public class UrlListenerImpl implements UrlListener {
         
         // delete the message
         event.deleteMessage().exceptionally(e -> {
-          loggerWrapper.log(Loglevel.ERROR, "failed to delete a message from " + event.getChannel().getId()
-                  + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+          logger.error("failed to delete a message from " + event.getChannel().getId()
+                  + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
           return null;
         });
 
-        loggerWrapper.log(Loglevel.WARN, "detected blocked url for server " + guild.getGuildName() + " (" + guild.getId() + ")" + " in channel "
+        logger.warn("detected blocked url for server " + guild.getGuildName() + " (" + guild.getId() + ")" + " in channel "
                 + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
 
         // feedback

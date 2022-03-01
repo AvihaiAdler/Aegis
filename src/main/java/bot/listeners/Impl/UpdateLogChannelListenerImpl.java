@@ -1,25 +1,20 @@
 package bot.listeners.Impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.listeners.UpdateLogChannelListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class UpdateLogChannelListenerImpl implements UpdateLogChannelListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
 
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -46,7 +41,7 @@ public class UpdateLogChannelListenerImpl implements UpdateLogChannelListener {
           guild.setLogChannelId(content[1]);
           var updated = guildDao.save(guild);
           
-          loggerWrapper.log(Loglevel.INFO, "the server " + guild.getGuildName() + " ("+ guild.getId() + ")" + " changed their logging channel to " + guild.getLogChannelId());
+          logger.info("the server " + guild.getGuildName() + " ("+ guild.getId() + ")" + " changed their logging channel to " + guild.getLogChannelId());
           
           // feedback
           var msg = "Logs will appear at **#" + event.getServer()

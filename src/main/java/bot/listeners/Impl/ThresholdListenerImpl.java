@@ -1,25 +1,20 @@
 package bot.listeners.Impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.listeners.ThresholdListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class ThresholdListenerImpl implements ThresholdListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -48,13 +43,13 @@ public class ThresholdListenerImpl implements ThresholdListener {
             guild.setThreshold(newThreshold);
             var updated = guildDao.save(guild);
             
-            loggerWrapper.log(Loglevel.INFO, "the server " + updated.getGuildName() + " (" + updated.getId() + ")" + " changed their prefix to " + updated.getPrefix());
+            logger.info("the server " + updated.getGuildName() + " (" + updated.getId() + ")" + " changed their prefix to " + updated.getPrefix());
             
             // feedback
             messageSender.send(event.getChannel(), "Threshold changed to **" + updated.getThreshold() + "**", updated);      
           }
         } catch (NumberFormatException e) {
-          loggerWrapper.log(Loglevel.ERROR, e.getMessage());
+          logger.error(Misc.parseThrowable(e));
         }        
       }); // guild.ifPresent
     }); // event.getMessageAuthor().asUser().ifPresent

@@ -144,4 +144,8 @@ public class Misc {
     }
     return blocked;
   }
+  
+  public static String parseThrowable(Throwable throwable) {
+    return Arrays.asList(throwable.getStackTrace()).stream().map(Object::toString).collect(Collectors.joining("\n"));  
+  }
 }

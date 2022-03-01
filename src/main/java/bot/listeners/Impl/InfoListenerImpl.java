@@ -1,6 +1,9 @@
 package bot.listeners.Impl;
 
 import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
@@ -8,11 +11,8 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import bot.dal.GuildDao;
 import bot.listeners.InfoListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.Misc;
 
 /*
@@ -21,13 +21,8 @@ import bot.util.Misc;
  */
 @Service
 public class InfoListenerImpl implements InfoListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
-
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -47,7 +42,7 @@ public class InfoListenerImpl implements InfoListener {
           guild.setGuildName(event.getServer().get().getName());
           updated = guildDao.save(guild);
 
-          loggerWrapper.log(Loglevel.INFO, "changed the name of " + event.getServer().get().getIdAsString() + " to "+ event.getServer().get().getName());
+          logger.info("changed the name of " + event.getServer().get().getIdAsString() + " to "+ event.getServer().get().getName());
         }  
         
         var embeds = Misc.getInfo(updated, event.getServer().get());        
@@ -70,8 +65,8 @@ public class InfoListenerImpl implements InfoListener {
                 .addComponents(old.get(0))
                 .update()
                 .exceptionally(e -> {
-                  loggerWrapper.log(Loglevel.ERROR, "failed to edit embed in " + guild.getLogChannelId() + " server: "
-                          + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+                  logger.error("failed to edit embed in " + guild.getLogChannelId() + " server: "
+                          + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
                   return null;
                 });
               } else {
@@ -89,8 +84,8 @@ public class InfoListenerImpl implements InfoListener {
                 .addComponents(old.get(0))
                 .update()
                 .exceptionally(e -> {
-                  loggerWrapper.log(Loglevel.ERROR, "failed to edit embed in " + guild.getLogChannelId() + " server: "
-                          + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+                  logger.error("failed to edit embed in " + guild.getLogChannelId() + " server: "
+                          + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
                   return null;
                 });
               } else {
@@ -103,8 +98,8 @@ public class InfoListenerImpl implements InfoListener {
                 .getMessage()
                 .delete()
                 .exceptionally(e -> {
-                  loggerWrapper.log(Loglevel.ERROR, "failed to delete an info embed in " + guild.getLogChannelId() + " server: "
-                          + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+                  logger.error("failed to delete an info embed in " + guild.getLogChannelId() + " server: "
+                          + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
                   return null;
                 });
               }
@@ -114,20 +109,20 @@ public class InfoListenerImpl implements InfoListener {
                 .removeAfter(1, TimeUnit.MINUTES)
                 .addRemoveHandler(() -> {
                   msg.delete().exceptionally(e -> {
-                    loggerWrapper.log(Loglevel.ERROR, "failed to delete an info embed with a handler in " + guild.getLogChannelId() + " server: "
-                            + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage() + " embed deleted manually");
+                    logger.error("failed to delete an info embed with a handler in " + guild.getLogChannelId() + " server: "
+                            + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + " embed deleted manually\n" + Misc.parseThrowable(e));
                     return null;
                   });
                 }))
         .exceptionally(e -> {
-          loggerWrapper.log(Loglevel.ERROR, "failed to attach a listener in " + guild.getLogChannelId() + " server: "
-                  + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+          logger.error("failed to attach a listener in " + guild.getLogChannelId() + " server: "
+                  + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
           return null;
         })
         .thenRun(() -> event.getMessage().delete()) // remove the command to prevent clutter
         .exceptionally(e -> {
-          loggerWrapper.log(Loglevel.ERROR, "failed to delete a command in " + guild.getLogChannelId() + " server: "
-                  + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+          logger.error("failed to delete a command in " + guild.getLogChannelId() + " server: "
+                  + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
           return null;
         });
       }); //guild.ifPresent

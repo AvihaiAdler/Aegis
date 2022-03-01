@@ -4,26 +4,21 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.listeners.SpamListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class SpamListenerImpl implements SpamListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -53,12 +48,12 @@ public class SpamListenerImpl implements SpamListener {
         // message contains a URL / Embed
         if (!event.getMessage().getEmbeds().isEmpty() || Misc.containsUrl(event.getMessageContent())) {
           event.deleteMessage().exceptionally(e -> {
-            loggerWrapper.log(Loglevel.ERROR, "failed to delete a message from " + event.getChannel().getId()
-                    + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+            logger.error("failed to delete a message from " + event.getChannel().getId()
+                    + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
             return null;
           });
 
-          loggerWrapper.log(Loglevel.WARN, "detected spam message for server " + guild.getId() + " in channel "
+          logger.warn("detected spam message for server " + guild.getId() + " in channel "
                   + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
 
           // log to the log channel

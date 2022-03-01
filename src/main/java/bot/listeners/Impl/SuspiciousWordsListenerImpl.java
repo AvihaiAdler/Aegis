@@ -7,6 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +16,15 @@ import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.data.GuildEntity;
 import bot.listeners.SuspiciousWordsListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
-  
+
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
     this.guildDao = guildDao;
@@ -55,8 +50,8 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
             if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages()) {
               
               event.deleteMessage().exceptionally(e -> {
-                loggerWrapper.log(Loglevel.ERROR, "failed to delete a message from " + event.getChannel().getId()
-                        + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+                logger.error("failed to delete a message from " + event.getChannel().getId()
+                        + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
                 return null;
               });
               
@@ -71,8 +66,8 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
         if (suspiciousContent && event.getChannel().canYouManageMessages()) {
           
           event.deleteMessage().exceptionally(e -> {
-            loggerWrapper.log(Loglevel.ERROR, "failed to delete a message from " + event.getChannel().getId()
-                    + " server " + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + e.getMessage());
+            logger.error("failed to delete a message from " + event.getChannel().getId()
+                    + " server " + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
             return null;
           });
           
@@ -84,7 +79,7 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
   }
   
   private void log(GuildEntity guild, MessageCreateEvent event) {
-    loggerWrapper.log(Loglevel.WARN, "detected some suspicious words for "  + guild.getGuildName() + " (" + guild.getId() + ")" + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
+    logger.warn("detected some suspicious words for "  + guild.getGuildName() + " (" + guild.getId() + ")" + " in channel " + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
     
     // log to the log channel
     var logChannelId = guild.getLogChannelId();

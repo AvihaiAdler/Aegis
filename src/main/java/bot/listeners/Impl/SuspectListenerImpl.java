@@ -2,26 +2,21 @@ package bot.listeners.Impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
 import bot.listeners.SuspectListener;
-import bot.util.LoggerWrapper;
-import bot.util.Loglevel;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
 public class SuspectListenerImpl implements SuspectListener {
-  private LoggerWrapper loggerWrapper;
+  private Logger logger = LogManager.getLogger();
   private GuildDao guildDao;
   private MessageSender messageSender;
-  
-  @Autowired
-  public void setLoggerWrapper(LoggerWrapper loggerWrapper) {
-    this.loggerWrapper = loggerWrapper;
-  }
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -65,7 +60,7 @@ public class SuspectListenerImpl implements SuspectListener {
         addedWords.forEach(word -> msg.append("**" + word + "**, "));
         msg.deleteCharAt(msg.lastIndexOf(","));
         
-        loggerWrapper.log(Loglevel.INFO, "the server "  + updated.getGuildName() + " (" + updated.getId() + ")" + " added the following words to their suspicious list\n" + msg);
+        logger.info("the server "  + updated.getGuildName() + " (" + updated.getId() + ")" + " added the following words to their suspicious list\n" + msg);
         
         // feedback
         messageSender.send(event.getChannel(), "Added the following words to the list:\n" + msg, updated);                  
