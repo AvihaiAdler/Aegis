@@ -14,7 +14,7 @@ import bot.util.Misc;
 
 @Service
 public class SuspectListenerImpl implements SuspectListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(SuspectListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
   

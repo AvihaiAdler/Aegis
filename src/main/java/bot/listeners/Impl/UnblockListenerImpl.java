@@ -13,7 +13,7 @@ import bot.util.Misc;
 
 @Service
 public class UnblockListenerImpl implements UnblockListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(UnblockListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
   

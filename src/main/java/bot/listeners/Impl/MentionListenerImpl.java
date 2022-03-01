@@ -15,7 +15,7 @@ import bot.util.Misc;
 
 @Component
 public class MentionListenerImpl implements MentionListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(MentionListenerImpl.class);
 
   @Override
   public void onMessageCreate(MessageCreateEvent event, GuildEntity guild) {

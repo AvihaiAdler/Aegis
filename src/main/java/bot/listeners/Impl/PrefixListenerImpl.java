@@ -12,7 +12,7 @@ import bot.util.Misc;
 
 @Service
 public class PrefixListenerImpl implements PrefixListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(PrefixListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
   

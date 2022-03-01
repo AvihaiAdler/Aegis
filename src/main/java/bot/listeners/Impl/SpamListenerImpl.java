@@ -16,7 +16,7 @@ import bot.util.Misc;
 
 @Service
 public class SpamListenerImpl implements SpamListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(SpamListenerImpl.class);
   private MessageSender messageSender;
   
   @Autowired

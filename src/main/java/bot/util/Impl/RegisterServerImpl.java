@@ -10,13 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import bot.dal.GuildDao;
 import bot.data.GuildEntity;
-import bot.listeners.Impl.UrlListenerImpl;
 import bot.util.ChannelCreator;
 import bot.util.RegisterServer;
 
 @Component
 public class RegisterServerImpl implements RegisterServer {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(RegisterServerImpl.class);
   private GuildDao guildDao;
   private ChannelCreator channelCreator;
   

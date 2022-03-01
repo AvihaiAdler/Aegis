@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<include
-		resource="org/springframework/boot/logging/logback/base.xml" />
-	<logger name="org.springframework.web" level="DEBUG" />
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+	<logger name="org.springframework.web" level="TRACE" />
   <property name="LOG_ROOT" value="./log" />
   <property name="LOG_FILE_NAME" value="aegis" />
 

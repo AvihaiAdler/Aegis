@@ -20,7 +20,7 @@ import bot.util.Misc;
  */
 @Service
 public class InfoListenerImpl implements InfoListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(InfoListenerImpl.class);
   private GuildDao guildDao;
   
   @Autowired

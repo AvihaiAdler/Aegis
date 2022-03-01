@@ -20,7 +20,7 @@ import bot.util.Misc;
 
 @Component
 public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(SuspiciousWordsListenerImpl.class);
   private MessageSender messageSender;
   
   @Autowired

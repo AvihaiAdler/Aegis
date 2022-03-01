@@ -12,7 +12,7 @@ import bot.util.Misc;
 
 @Service
 public class ThresholdListenerImpl implements ThresholdListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(ThresholdListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
   

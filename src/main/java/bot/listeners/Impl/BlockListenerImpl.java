@@ -13,7 +13,7 @@ import bot.util.Misc;
 
 @Service
 public class BlockListenerImpl implements BlockListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(BlockListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
   

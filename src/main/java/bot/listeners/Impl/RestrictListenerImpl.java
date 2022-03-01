@@ -12,7 +12,7 @@ import bot.util.Misc;
 
 @Service
 public class RestrictListenerImpl implements RestrictListener {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(RestrictListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
   
