@@ -5,58 +5,57 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import bot.dal.GuildDao;
 import bot.listeners.BlockListener;
 import bot.listeners.InfoListener;
-import bot.listeners.MentionListener;
+import bot.listeners.MessageListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
-import bot.listeners.SpamListener;
 import bot.listeners.SuspectListener;
-import bot.listeners.SuspiciousWordsListener;
 import bot.listeners.ThresholdListener;
 import bot.listeners.UnblockListener;
 import bot.listeners.UnrestrictListener;
 import bot.listeners.UnsuspectListener;
 import bot.listeners.UpdateLogChannelListener;
-import bot.listeners.UrlListener;
+import bot.listeners.Impl.UrlListenerImpl;
 
 @Configuration
 public class Config {
-  private Logger logger = LogManager.getLogger();
+  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
   private GuildDao guildDao;
   private RegisterServer registerServer;
   
   // listeners
+  private MessageListener messageListener;
   private BlockListener blockListener;
   private InfoListener infoListener;
-  private MentionListener mentionListener;
   private PrefixListener prefixListener;
   private RestrictListener restrictListener;
-  private SpamListener spamListener;
   private SuspectListener suspectListener;
-  private SuspiciousWordsListener suspiciousWordsListener;
   private ThresholdListener thresholdListener;
   private UnblockListener unblockListener;
   private UnrestrictListener unrestrictListener;
   private UnsuspectListener unsuspectListener;
   private UpdateLogChannelListener updateLogChannelListener;
-  private UrlListener urlListener;
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
     this.guildDao = guildDao;
+  }
+  
+  @Autowired
+  public void setMessageListener(MessageListener messageListener) {
+    this.messageListener = messageListener;
   }
   
   @Autowired
@@ -75,11 +74,6 @@ public class Config {
   }
   
   @Autowired
-  public void setMentionListener(MentionListener mentionListener) {
-    this.mentionListener = mentionListener;
-  }
-  
-  @Autowired
   public void setPrefixListener(PrefixListener prefixListener) {
     this.prefixListener = prefixListener;
   }
@@ -90,18 +84,8 @@ public class Config {
   }
   
   @Autowired
-  public void setSpamListener(SpamListener spamListener) {
-    this.spamListener = spamListener;
-  }
-  
-  @Autowired
   public void setSuspectListener(SuspectListener suspectListener) {
     this.suspectListener = suspectListener;
-  }
-  
-  @Autowired
-  public void setSuspiciousWordsListener(SuspiciousWordsListener suspiciousWordsListener) {
-    this.suspiciousWordsListener = suspiciousWordsListener;
   }
   
   @Autowired
@@ -127,11 +111,6 @@ public class Config {
   @Autowired
   public void setUpdateLogChannelListener(UpdateLogChannelListener updateLogChannelListener) {
     this.updateLogChannelListener = updateLogChannelListener;
-  }
-  
-  @Autowired
-  public void setUrlListener(UrlListener urlListener) {
-    this.urlListener = urlListener;
   }
   
   @Bean
@@ -179,18 +158,15 @@ public class Config {
     discordApi.addServerJoinListener(joinEvent -> {
       registerServer.registerServer(joinEvent);
     });
-  
-    discordApi.addMessageCreateListener(suspiciousWordsListener);
-    discordApi.addMessageCreateListener(spamListener);
-    discordApi.addMessageCreateListener(urlListener);
-    discordApi.addMessageCreateListener(mentionListener);
     
-    // Commands listeners
     discordApi.addMessageCreateListener(event -> {
       if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
+        messageListener.onMessageCreate(event);
+        
         var content = Arrays.asList(event.getMessageContent().split("\\s+"));
         var serverId = event.getServer().get().getIdAsString();
         
+        // Commands listeners
         guildDao.findById(serverId).ifPresentOrElse(guild -> {
           if(event.getMessageContent().startsWith(guild.getPrefix())) {
             var listener = commands.get(content.get(0).split(Pattern.quote(guild.getPrefix()))[1]);
@@ -199,7 +175,7 @@ public class Config {
               listener.onMessageCreate(event);
             }
           }
-        }, () ->/* guild doesn't exists in the DB*/ registerServer.registerServer(event)); // guild.ifPresent  
+        }, () ->/* guild doesn't exists in the DB */ registerServer.registerServer(event)); // guild.ifPresent  
       }
     }); // discordApi.addMessageCreateListener
     return discordApi;
