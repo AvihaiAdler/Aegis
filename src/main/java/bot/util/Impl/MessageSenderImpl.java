@@ -9,6 +9,7 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.springframework.stereotype.Service;
 import bot.data.GuildEntity;
 import bot.util.MessageSender;
+import bot.util.Misc;
 
 @Service
 public class MessageSenderImpl implements MessageSender {
@@ -21,7 +22,7 @@ public class MessageSenderImpl implements MessageSender {
             .send(channel)
             .exceptionally(e -> {
               logger.error("failed to send a message in channel: " + guild.getLogChannelId() + " server: "
-                      + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + e.getCause());
+                      + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
               return null;
             });
   }
