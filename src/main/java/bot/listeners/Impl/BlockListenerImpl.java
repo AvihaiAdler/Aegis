@@ -1,6 +1,5 @@
 package bot.listeners.Impl;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.slf4j.Logger;
@@ -37,13 +36,12 @@ public class BlockListenerImpl implements BlockListener {
       guildDao.findById(event.getServer().get().getIdAsString()).ifPresent(guild -> {
         var blockedUrls = new HashSet<String>();
         // collect all the urls from the message
-        Arrays.asList(event.getMessageContent().substring(event
-                .getMessageContent()
-                .indexOf(' '))
-                .split("\\s+")).stream()
-        .filter(Misc::containsUrl).map(String::trim).forEach(url -> {
-          if (guild.getBlockedUrls().add(url)) blockedUrls.add(url);
-        });
+        Misc.getUrls(event.getMessageContent())
+            .stream()
+            .map(String::trim)
+            .forEach(url -> {
+              if (guild.getBlockedUrls().add(url)) blockedUrls.add(url);
+            });
         
         var updated = guildDao.save(guild);
         

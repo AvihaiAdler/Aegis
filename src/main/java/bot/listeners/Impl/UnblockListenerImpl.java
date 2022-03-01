@@ -1,6 +1,5 @@
 package bot.listeners.Impl;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.slf4j.Logger;
@@ -40,14 +39,12 @@ public class UnblockListenerImpl implements UnblockListener {
         var unblockedUrls = new HashSet<String>();
         
         // collect urls
-        Arrays.asList(event.getMessageContent().substring(event.getMessageContent().indexOf(' '))
-                .split("\\s+"))
-                .stream()
-                .filter(Misc::containsUrl)
-                .map(String::trim)
-                .forEach(url -> {
-                  if (guild.getBlockedUrls().remove(url)) unblockedUrls.add(url);
-                });
+        Misc.getUrls(event.getMessageContent())
+            .stream()
+            .map(String::trim)
+            .forEach(url -> {
+              if (guild.getBlockedUrls().remove(url)) unblockedUrls.add(url);
+            });
         var updated = guildDao.save(guild);
         
         // no urls were 'unblocked' - bail
