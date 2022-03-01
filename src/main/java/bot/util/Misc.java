@@ -3,9 +3,9 @@ package bot.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.entity.server.Server;
@@ -13,18 +13,22 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import bot.data.GuildEntity;
 
 public class Misc {
-  public static boolean containsUrl(String potentialUrl) {
+  public static boolean containsUrl(String message) {
+    return getUrls(message).isEmpty();
+  }
+  
+  public static Set<String> getUrls(String message) {
     final String urlRegex = "<?\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>?";
-    if (potentialUrl == null)
-      return false;
-    var content = Arrays.asList(potentialUrl.split("\\s+"))
+
+    return Arrays.asList(message.split("\\s+"))
         .stream()
         .filter(word -> Pattern.matches(urlRegex, word))
-        .collect(Collectors.toList());
-    return !content.isEmpty();
+        .map(url -> url.startsWith("<") ? url.substring(1) : url)
+        .map(url -> url.endsWith(">") ? url.substring(0, url.length()) : url)
+        .collect(Collectors.toSet());
   }
 
-  public static boolean isUserAllowed(MessageCreateEvent event, DiscordApi discordApi) {
+  public static boolean isUserAllowed(MessageCreateEvent event) {
     var usrHighestRole = event.getServer().get().getHighestRole(event.getMessageAuthor().asUser().get());
 
     // user has no role

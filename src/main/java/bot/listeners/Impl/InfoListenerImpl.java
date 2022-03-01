@@ -1,14 +1,13 @@
 package bot.listeners.Impl;
 
 import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.util.logging.ExceptionLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
@@ -21,7 +20,7 @@ import bot.util.Misc;
  */
 @Service
 public class InfoListenerImpl implements InfoListener {
-  private Logger logger = LogManager.getLogger();
+  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
   private GuildDao guildDao;
   
   @Autowired
@@ -33,7 +32,7 @@ public class InfoListenerImpl implements InfoListener {
   public void onMessageCreate(MessageCreateEvent event) {
     event.getMessageAuthor().asUser().ifPresent(usr -> {
       // user doesn't have permission to invoke the command
-      if (!Misc.isUserAllowed(event, event.getApi())) return; 
+      if (!Misc.isUserAllowed(event)) return; 
       
       guildDao.findById(event.getServer().get().getIdAsString()).ifPresent(guild -> {
         // update guild name (in case it was changed between calls to info)

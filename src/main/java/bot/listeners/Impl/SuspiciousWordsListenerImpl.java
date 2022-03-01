@@ -7,28 +7,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import bot.dal.GuildDao;
+import org.springframework.stereotype.Component;
 import bot.data.GuildEntity;
 import bot.listeners.SuspiciousWordsListener;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
-@Service
+@Component
 public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
-  private Logger logger = LogManager.getLogger();
-  private GuildDao guildDao;
+  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
   private MessageSender messageSender;
-
-  @Autowired
-  public void setGuildDao(GuildDao guildDao) {
-    this.guildDao = guildDao;
-  }
   
   @Autowired
   public void setMessageSender(MessageSender messageSender) {
@@ -36,45 +29,36 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
   }
   
   @Override
-  public void onMessageCreate(MessageCreateEvent event) {
-    if (event.isServerMessage() && !event.getMessageAuthor().isBotUser()) {
-      // if user is allowed - ignore their message
-      if(event.getMessageAuthor().asUser().isPresent()) {
-        if(Misc.isUserAllowed(event, event.getApi())) return;
-      }
-
-      guildDao.findById(event.getServer().get().getIdAsString()).ifPresent(guild -> {
-        // check embeds if there're any
-        if(!event.getMessage().getEmbeds().isEmpty()) {
-          event.getMessage().getEmbeds().forEach(embed -> {
-            if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages()) {
-              
-              event.deleteMessage().exceptionally(e -> {
-                logger.error("failed to delete a message from " + event.getChannel().getId()
-                        + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
-                return null;
-              });
-              
-              log(guild, event);  // feedback
-              return;            
-            }
-          });        
-        }
-        
-        // check message content
-        var suspiciousContent = checkString(event.getMessageContent(), guild);
-        if (suspiciousContent && event.getChannel().canYouManageMessages()) {
+  public void onMessageCreate(MessageCreateEvent event, GuildEntity guild) {
+    // check embeds if there're any
+    if(!event.getMessage().getEmbeds().isEmpty()) {
+      event.getMessage().getEmbeds().forEach(embed -> {
+        if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages()) {
           
           event.deleteMessage().exceptionally(e -> {
             logger.error("failed to delete a message from " + event.getChannel().getId()
-                    + " server " + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
+                    + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
             return null;
           });
           
-          log(guild, event); // feedback
-          return;
+          log(guild, event);  // feedback
+          return;            
         }
-      }); // guild.ifPresent  
+      });        
+    }
+    
+    // check message content
+    var suspiciousContent = checkString(event.getMessageContent(), guild);
+    if (suspiciousContent && event.getChannel().canYouManageMessages()) {
+      
+      event.deleteMessage().exceptionally(e -> {
+        logger.error("failed to delete a message from " + event.getChannel().getId()
+                + " server " + guild.getGuildName() + " (" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
+        return null;
+      });
+      
+      log(guild, event); // feedback
+      return;
     }
   }
   

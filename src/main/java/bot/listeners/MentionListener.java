@@ -1,7 +1,9 @@
 package bot.listeners;
 
-import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.event.message.MessageCreateEvent;
 
-public interface MentionListener extends MessageCreateListener {
+import bot.data.GuildEntity;
 
+public interface MentionListener {
+  public void onMessageCreate(MessageCreateEvent event, GuildEntity guild);
 }

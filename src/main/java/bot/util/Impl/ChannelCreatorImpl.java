@@ -1,15 +1,17 @@
 package bot.util.Impl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import bot.listeners.Impl.UrlListenerImpl;
 import bot.util.ChannelCreator;
 import bot.util.Misc;
 
 @Component
 public class ChannelCreatorImpl implements ChannelCreator {
-  private Logger logger = LogManager.getLogger();
+  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
   
   @Override
   public String create(Server server, String channelName) {

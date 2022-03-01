@@ -2,9 +2,9 @@ package bot.listeners.Impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bot.dal.GuildDao;
@@ -14,7 +14,7 @@ import bot.util.Misc;
 
 @Service
 public class UnsuspectListenerImpl implements UnsuspectListener {
-  private Logger logger = LogManager.getLogger();
+  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
   private GuildDao guildDao;
   private MessageSender messageSender;
 
@@ -31,7 +31,7 @@ public class UnsuspectListenerImpl implements UnsuspectListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     event.getMessageAuthor().asUser().ifPresent(usr -> {
-      if(!Misc.isUserAllowed(event, event.getApi())) return;
+      if(!Misc.isUserAllowed(event)) return;
       
       if(event.getMessageContent().split("\\s+").length < 2) return;
       
