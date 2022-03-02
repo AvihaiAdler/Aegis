@@ -62,7 +62,7 @@ public class GlobalMessageListenerImpl implements GlobalMessageListener {
       if(event.getMessageAuthor().asUser().isPresent() && Misc.isUserAllowed(event)) {
         return;              
       }
-      
+
       everyoneListener.onMessageCreate(event, guild);
       
       suspiciousWordsListener.onMessageCreate(event, guild);
