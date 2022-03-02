@@ -35,4 +35,5 @@ out/
 ### VS Code ###
 .vscode/
 aegis.yaml
-log/aegis.log
+log/*
+/log/
