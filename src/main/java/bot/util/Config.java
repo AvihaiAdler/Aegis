@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -18,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import bot.dal.GuildDao;
 import bot.listeners.BlockListener;
 import bot.listeners.InfoListener;
-import bot.listeners.MessageListener;
+import bot.listeners.GlobalMessageListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
 import bot.listeners.SuspectListener;
@@ -34,9 +36,10 @@ public class Config {
   private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
   private GuildDao guildDao;
   private RegisterServer registerServer;
+  private CacheOrganizer cacheOrganizer;
   
   // listeners
-  private MessageListener messageListener;
+  private GlobalMessageListener messageListener;
   private BlockListener blockListener;
   private InfoListener infoListener;
   private PrefixListener prefixListener;
@@ -54,7 +57,12 @@ public class Config {
   }
   
   @Autowired
-  public void setMessageListener(MessageListener messageListener) {
+  public void setCacheOrganizer(CacheOrganizer cacheOrganizer) {
+    this.cacheOrganizer = cacheOrganizer;
+  }
+  
+  @Autowired
+  public void setMessageListener(GlobalMessageListener messageListener) {
     this.messageListener = messageListener;
   }
   
@@ -156,7 +164,7 @@ public class Config {
   
     // Server joined listener
     discordApi.addServerJoinListener(joinEvent -> {
-      registerServer.registerServer(joinEvent);
+      registerServer.register(joinEvent);
     });
     
     discordApi.addMessageCreateListener(event -> {
@@ -175,8 +183,11 @@ public class Config {
               listener.onMessageCreate(event);
             }
           }
-        }, () ->/* guild doesn't exists in the DB */ registerServer.registerServer(event)); // guild.ifPresent  
+        }, () ->/* guild doesn't exists in the DB */ registerServer.register(event)); // guild.ifPresent  
       }
+      
+      var cacheOrganizerExecutor = Executors.newSingleThreadScheduledExecutor();
+      cacheOrganizerExecutor.scheduleWithFixedDelay(cacheOrganizer::organize, 1, 1, TimeUnit.DAYS);
     }); // discordApi.addMessageCreateListener
     return discordApi;
   }

@@ -1,5 +1,6 @@
 package bot.listeners.Impl;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -13,7 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import bot.dal.SpamUrlsDao;
 import bot.data.GuildEntity;
+import bot.data.SpamUrlEntity;
 import bot.listeners.SuspiciousWordsListener;
 import bot.util.MessageSender;
 import bot.util.Misc;
@@ -22,10 +26,16 @@ import bot.util.Misc;
 public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
   private Logger logger = LoggerFactory.getLogger(SuspiciousWordsListenerImpl.class);
   private MessageSender messageSender;
+  private SpamUrlsDao spamUrlsDao;
   
   @Autowired
   public void setMessageSender(MessageSender messageSender) {
     this.messageSender = messageSender;
+  }
+  
+  @Autowired
+  public void setSpamUrlsDao(SpamUrlsDao spamUrlsDao) {
+    this.spamUrlsDao = spamUrlsDao;
   }
   
   @Override
@@ -33,7 +43,7 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
     // check embeds if there're any
     if(!event.getMessage().getEmbeds().isEmpty()) {
       event.getMessage().getEmbeds().forEach(embed -> {
-        if (isSuspicious(embed, guild) && event.getChannel().canYouManageMessages()) {
+        if (isSuspicious(embed, guild)) {
           
           event.deleteMessage().exceptionally(e -> {
             logger.error("failed to delete a message from " + event.getChannel().getId()
@@ -41,6 +51,8 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
             return null;
           });
           
+          // save the urls into the db
+          saveMessageUrls(event.getMessageContent(), event.getServer().get().getIdAsString());
           log(guild, event);  // feedback
           return;            
         }
@@ -48,8 +60,7 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
     }
     
     // check message content
-    var suspiciousContent = checkString(event.getMessageContent(), guild);
-    if (suspiciousContent && event.getChannel().canYouManageMessages()) {
+    if (checkString(event.getMessageContent(), guild)) {
       
       event.deleteMessage().exceptionally(e -> {
         logger.error("failed to delete a message from " + event.getChannel().getId()
@@ -57,9 +68,17 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
         return null;
       });
       
+      // save the urls into the db
+      saveMessageUrls(event.getMessageContent(), event.getServer().get().getIdAsString());
       log(guild, event); // feedback
       return;
     }
+  }
+  
+  private void saveMessageUrls(String message, String serverId) {
+    Misc.getUrls(message).forEach(url -> {
+      spamUrlsDao.save(new SpamUrlEntity(Instant.now().getEpochSecond(), url, serverId));
+    });
   }
   
   private void log(GuildEntity guild, MessageCreateEvent event) {

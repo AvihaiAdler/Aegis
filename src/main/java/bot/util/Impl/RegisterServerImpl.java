@@ -30,7 +30,7 @@ public class RegisterServerImpl implements RegisterServer {
   }
   
   @Override
-  public void registerServer(Event event) {
+  public void register(Event event) {
     Server server = null;
     if (event instanceof ServerEvent) {
       server = ((ServerEvent) event).getServer();

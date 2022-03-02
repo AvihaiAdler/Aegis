@@ -1,5 +1,6 @@
 package bot.listeners.Impl;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -9,19 +10,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import bot.dal.SpamUrlsDao;
 import bot.data.GuildEntity;
-import bot.listeners.SpamListener;
+import bot.data.SpamUrlEntity;
+import bot.listeners.EveryoneListener;
 import bot.util.MessageSender;
 import bot.util.Misc;
 
 @Service
-public class SpamListenerImpl implements SpamListener {
-  private Logger logger = LoggerFactory.getLogger(SpamListenerImpl.class);
+public class EveyoneListenerImpl implements EveryoneListener {
+  private Logger logger = LoggerFactory.getLogger(EveyoneListenerImpl.class);
   private MessageSender messageSender;
+  private SpamUrlsDao spamUrlsDao;
   
   @Autowired
   public void setMessageSender(MessageSender messageSender) {
     this.messageSender = messageSender;
+  }
+  
+  @Autowired
+  public void setSpamUrlsDao(SpamUrlsDao spamUrlsDao) {
+    this.spamUrlsDao = spamUrlsDao;
   }
   
   @Override
@@ -39,7 +49,12 @@ public class SpamListenerImpl implements SpamListener {
                 + " server " + guild.getGuildName() + "(" + guild.getId() + ")" + "\nreason: " + Misc.parseThrowable(e));
         return null;
       });
-
+      
+      //save the potential spam message in the db
+      Misc.getUrls(event.getMessageContent()).forEach(url -> {
+        spamUrlsDao.save(new SpamUrlEntity(Instant.now().getEpochSecond(), url, event.getServer().get().getIdAsString()));        
+      });
+      
       logger.warn("detected spam message for server " + guild.getId() + " in channel "
               + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
 
