@@ -14,17 +14,20 @@ import bot.data.GuildEntity;
 
 public class Misc {
   public static boolean containsUrl(String message) {
-    return getUrls(message).isEmpty();
+    return !getUrls(message).isEmpty();
   }
   
   public static Set<String> getUrls(String message) {
-    final String urlRegex = "<?\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>?";
+    final String urlRegex = "\\b(https?|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]$";
 
     return Arrays.asList(message.split("\\s+"))
         .stream()
-        .filter(word -> Pattern.matches(urlRegex, word))
         .map(url -> url.startsWith("<") ? url.substring(1) : url)
         .map(url -> url.endsWith(">") ? url.substring(0, url.length()) : url)
+        .filter(word -> {
+          System.err.println(word + " matches? " + Pattern.matches(urlRegex, word));
+          return Pattern.matches(urlRegex, word);
+        })
         .collect(Collectors.toSet());
   }
 
