@@ -40,7 +40,7 @@ public class EveyoneListenerImpl implements EveryoneListener {
     
     // tag everyone
     if (event.getMessageContent().contains("@everyone") || event.getMessage().mentionsEveryone()) {
-      System.err.println("url? " + Misc.containsUrl(event.getMessageContent()));
+
       // message contains a URL / Embed
       if (!event.getMessage().getEmbeds().isEmpty() || Misc.containsUrl(event.getMessageContent())) {
         event.deleteMessage().exceptionally(e -> {
@@ -51,7 +51,15 @@ public class EveyoneListenerImpl implements EveryoneListener {
         
         //save the potential spam message in the db
         Misc.getUrls(event.getMessageContent()).forEach(url -> {
-          spamUrlsDao.save(new SpamUrlEntity(Instant.now().getEpochSecond(), url, event.getServer().get().getIdAsString()));        
+          
+          spamUrlsDao.findOneByUrl(url).ifPresentOrElse(spamEntity -> { // url in the cache
+            
+            // add the server id into the list of servers the url was sent it
+            spamEntity.getServers().add(event.getServer().get().getIdAsString());
+            spamUrlsDao.save(spamEntity);
+          }, () -> {  // url insn't the cache
+            spamUrlsDao.save(new SpamUrlEntity(Instant.now().getEpochSecond(), url, event.getServer().get().getIdAsString()));
+          });      
         });
         
         logger.warn("detected spam message for server " + guild.getId() + " in channel "

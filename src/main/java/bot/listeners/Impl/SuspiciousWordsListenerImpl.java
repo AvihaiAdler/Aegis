@@ -77,7 +77,14 @@ public class SuspiciousWordsListenerImpl implements SuspiciousWordsListener {
   
   private void saveMessageUrls(String message, String serverId) {
     Misc.getUrls(message).forEach(url -> {
-      spamUrlsDao.save(new SpamUrlEntity(Instant.now().getEpochSecond(), url, serverId));
+      spamUrlsDao.findOneByUrl(url).ifPresentOrElse(spamEntity -> { // url in the cache
+        
+        // add the server id into the list of servers the url was sent it
+        spamEntity.getServers().add(serverId);
+        spamUrlsDao.save(spamEntity);
+      }, () -> {  // url insn't the cache
+        spamUrlsDao.save(new SpamUrlEntity(Instant.now().getEpochSecond(), url, serverId));
+      });  
     });
   }
   
