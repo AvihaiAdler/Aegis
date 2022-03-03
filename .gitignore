@@ -37,3 +37,4 @@ out/
 aegis.yaml
 log/*
 /log/
+/aegis.yml
