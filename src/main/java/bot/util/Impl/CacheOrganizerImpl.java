@@ -26,7 +26,7 @@ public class CacheOrganizerImpl implements CacheOrganizer {
     this.intervalDays = intervalDays;
   }
   
-  @Value("${spam.threshold:2}")
+  @Value("${spam.threshold:10}")
   public void setSpamThreshold(int spamThreshold) {
     this.spamThreshold = spamThreshold;
   }

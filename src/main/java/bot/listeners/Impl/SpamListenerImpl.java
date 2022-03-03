@@ -34,7 +34,7 @@ public class SpamListenerImpl implements SpamListener {
     this.spamUrlsDao = spamUrlsDao;
   }
   
-  @Value("${spam.threshold:2}")
+  @Value("${spam.threshold:5}")
   public void setSpamThreshold(int spamThreshold) {
     this.spamThreshold = spamThreshold;
   }
