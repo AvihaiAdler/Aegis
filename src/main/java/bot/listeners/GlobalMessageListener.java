@@ -52,8 +52,7 @@ public class GlobalMessageListener implements MessageCreateListener {
       // fire for every user
       mentionListener.onMessageCreate(event, guild);
       
-      // fire for non ADMINISTRATORS
-      // user is allowed - ignore their message
+      // user is allowed (admin/server owner) - ignore their message
       if(event.getMessageAuthor().asUser().isPresent() && Misc.isUserAllowed(event)) {
         return;              
       }
