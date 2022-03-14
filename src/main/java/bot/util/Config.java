@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import bot.dal.GuildDao;
 import bot.listeners.BlockListener;
 import bot.listeners.InfoListener;
+import bot.listeners.NotifyListener;
 import bot.listeners.GlobalMessageListener;
 import bot.listeners.PrefixListener;
 import bot.listeners.RestrictListener;
@@ -51,6 +52,7 @@ public class Config {
   private UnrestrictListener unrestrictListener;
   private UnsuspectListener unsuspectListener;
   private UpdateLogChannelListener updateLogChannelListener;
+  private NotifyListener notifyListener;
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -127,6 +129,11 @@ public class Config {
     this.updateLogChannelListener = updateLogChannelListener;
   }
   
+  @Autowired
+  public void setNotifyListener(NotifyListener notifyListener) {
+    this.notifyListener = notifyListener;
+  }
+  
   @Bean
   public DiscordApi discordApi() {
     final Map<String, MessageCreateListener> commands = Collections.synchronizedMap(new HashMap<>());
@@ -158,6 +165,7 @@ public class Config {
     commands.put("threshold", thresholdListener);
     commands.put("logto", updateLogChannelListener);
     commands.put("info", infoListener);
+    commands.put("notify", notifyListener);
     logger.info("added command listeners");
 
     // Server leave listener
