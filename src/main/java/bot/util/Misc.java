@@ -64,8 +64,7 @@ public class Misc {
 
     var embed = new EmbedBuilder()
         .setTitle("Info")
-        .addInlineField("Server", guild.getId())
-        .addInlineField("Name", server.getName())
+        .setThumbnail(server.getIcon().get())
         .addField("Prefix", guild.getPrefix())
         .addField("Threshold", Integer.toString(guild.getThreshold()))
         .addField("Restricted", guild.getRestricted() ? "Yes" : "No");

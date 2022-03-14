@@ -28,7 +28,7 @@ Aegis has 3 different functionalities:
 Aegis has a set of commands (listed below) you can use, note that currently only people with ADMINISTRATOR privileges / the server owner can invoke them.
 All commands must start with a prefix (`!` by default) except for the first one on the list.
 
-| Command    | Parameters                                    | Effect                                                                                          | Privileges  |
+| Command    | Parameters                                   | Effect                                                                                          | Privileges  |
 | ---------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------- |
 | @Aegis     | None                                         | Aegis will display a short version of this table                                                | EVERYONE    |
 | info       | None                                         | Aegis will display all the information it holds about your server                               | ADMIN/OWNER |

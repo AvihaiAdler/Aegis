@@ -29,11 +29,11 @@ import bot.listeners.UnblockListener;
 import bot.listeners.UnrestrictListener;
 import bot.listeners.UnsuspectListener;
 import bot.listeners.UpdateLogChannelListener;
-import bot.listeners.Impl.UrlListenerImpl;
+import bot.listeners.UrlListener;
 
 @Configuration
 public class Config {
-  private Logger logger = LoggerFactory.getLogger(UrlListenerImpl.class);
+  private Logger logger = LoggerFactory.getLogger(UrlListener.class);
   private GuildDao guildDao;
   private RegisterServer registerServer;
   private CacheOrganizer cacheOrganizer;
