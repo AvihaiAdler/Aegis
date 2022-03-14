@@ -15,6 +15,7 @@ public class GlobalMessageListener implements MessageCreateListener {
   private UrlListener urlListener;
   private EveryoneListener everyoneListener;
   private SpamListener spamListener;
+  private FloodMessagesListener floodMessagesListener;
   
   @Autowired
   public void setGuildDao(GuildDao guildDao) {
@@ -46,6 +47,11 @@ public class GlobalMessageListener implements MessageCreateListener {
     this.spamListener = spamListener;
   }
   
+  @Autowired
+  public void setFloodMessagesListener(FloodMessagesListener floodMessagesListener) {
+    this.floodMessagesListener = floodMessagesListener;
+  }
+  
   @Override
   public void onMessageCreate(MessageCreateEvent event) {
     guildDao.findById(event.getServer().get().getIdAsString()).ifPresent(guild -> {
@@ -64,6 +70,8 @@ public class GlobalMessageListener implements MessageCreateListener {
       spamListener.onMessageCreate(event, guild);
       
       urlListener.onMessageCreate(event, guild);
+
+      floodMessagesListener.onMessageCreate(event, guild);
     }); // guild.ifPresent
   }
 }

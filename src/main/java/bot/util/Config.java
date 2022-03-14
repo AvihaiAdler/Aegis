@@ -36,7 +36,8 @@ public class Config {
   private Logger logger = LoggerFactory.getLogger(UrlListener.class);
   private GuildDao guildDao;
   private RegisterServer registerServer;
-  private SpamCacheOrganizer cacheOrganizer;
+  private SpamCacheOrganizer spamCacheOrganizer;
+  private MessagesCacheOrganizer messagesCacheOrganizer;
   
   // listeners
   private GlobalMessageListener messageListener;
@@ -57,8 +58,13 @@ public class Config {
   }
   
   @Autowired
-  public void setCacheOrganizer(SpamCacheOrganizer cacheOrganizer) {
-    this.cacheOrganizer = cacheOrganizer;
+  public void setSpamCacheOrganizer(SpamCacheOrganizer spamCacheOrganizer) {
+    this.spamCacheOrganizer = spamCacheOrganizer;
+  }
+  
+  @Autowired
+  public void setMessagesCacheOrganizer(MessagesCacheOrganizer messagesCacheOrganizer) {
+    this.messagesCacheOrganizer = messagesCacheOrganizer;
   }
   
   @Autowired
@@ -190,11 +196,11 @@ public class Config {
     
     // delete old spam messages from the db
     var spamCacheOrganizerExecutor = Executors.newSingleThreadScheduledExecutor();
-    spamCacheOrganizerExecutor.scheduleWithFixedDelay(cacheOrganizer::organize, 1, 1, TimeUnit.DAYS);
+    spamCacheOrganizerExecutor.scheduleWithFixedDelay(spamCacheOrganizer::organize, 1, 1, TimeUnit.DAYS);
     
     // delete old messages from the db
     var messagesCacheOrganizerExecutor = Executors.newSingleThreadScheduledExecutor();
-    messagesCacheOrganizerExecutor.scheduleWithFixedDelay(cacheOrganizer::organize, 2, 2, TimeUnit.SECONDS);
+    messagesCacheOrganizerExecutor.scheduleWithFixedDelay(messagesCacheOrganizer::organize, 10, 10, TimeUnit.SECONDS);
     
     return discordApi;
   }
