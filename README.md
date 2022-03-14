@@ -51,7 +51,7 @@ The `info` command doen't work properly when trying to 'switch' pages. Most of t
 - [x] The `info` command can benefit from Buttons instead of Reactions
 - [ ] Turning Aegis into a full fledged moderation bot
 - [ ] Migrating to slash commands
-- [ ] implement a simple counter measure against flood messages 'attacks'
+- [x] implement a simple counter measure against flood messages 'attacks'
 
 ### Deployment
 
