@@ -8,5 +8,15 @@
     "name": "spam.threshold",
     "type": "java.lang.String",
     "description": "A description for 'spam.threshold'"
+  },
+  {
+    "name": "interval.seconds",
+    "type": "java.lang.String",
+    "description": "A description for 'interval.seconds'"
+  },
+  {
+    "name": "flood.delay",
+    "type": "java.lang.String",
+    "description": "A description for 'flood.delay'"
   }
 ]}

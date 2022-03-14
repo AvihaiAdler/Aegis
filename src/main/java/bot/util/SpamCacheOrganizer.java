@@ -1,4 +1,4 @@
-package bot.util.Impl;
+package bot.util;
 
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -7,11 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import bot.dal.SpamUrlsDao;
-import bot.util.CacheOrganizer;
 
 @Service
-public class CacheOrganizerImpl implements CacheOrganizer {
-  private Logger logger = LoggerFactory.getLogger(CacheOrganizerImpl.class);
+public class SpamCacheOrganizer implements CacheOrganizer {
+  private Logger logger = LoggerFactory.getLogger(SpamCacheOrganizer.class);
   private SpamUrlsDao spamUrlsDao;
   private int intervalDays;
   private int spamThreshold;

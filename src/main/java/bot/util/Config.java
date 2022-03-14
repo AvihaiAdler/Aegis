@@ -36,7 +36,7 @@ public class Config {
   private Logger logger = LoggerFactory.getLogger(UrlListener.class);
   private GuildDao guildDao;
   private RegisterServer registerServer;
-  private CacheOrganizer cacheOrganizer;
+  private SpamCacheOrganizer cacheOrganizer;
   
   // listeners
   private GlobalMessageListener messageListener;
@@ -57,7 +57,7 @@ public class Config {
   }
   
   @Autowired
-  public void setCacheOrganizer(CacheOrganizer cacheOrganizer) {
+  public void setCacheOrganizer(SpamCacheOrganizer cacheOrganizer) {
     this.cacheOrganizer = cacheOrganizer;
   }
   
@@ -186,9 +186,16 @@ public class Config {
         }, () ->/* guild doesn't exists in the DB */ registerServer.register(event)); // guild.ifPresent  
       }
       
-      var cacheOrganizerExecutor = Executors.newSingleThreadScheduledExecutor();
-      cacheOrganizerExecutor.scheduleWithFixedDelay(cacheOrganizer::organize, 1, 1, TimeUnit.DAYS);
     }); // discordApi.addMessageCreateListener
+    
+    // delete old spam messages from the db
+    var spamCacheOrganizerExecutor = Executors.newSingleThreadScheduledExecutor();
+    spamCacheOrganizerExecutor.scheduleWithFixedDelay(cacheOrganizer::organize, 1, 1, TimeUnit.DAYS);
+    
+    // delete old messages from the db
+    var messagesCacheOrganizerExecutor = Executors.newSingleThreadScheduledExecutor();
+    messagesCacheOrganizerExecutor.scheduleWithFixedDelay(cacheOrganizer::organize, 2, 2, TimeUnit.SECONDS);
+    
     return discordApi;
   }
 }
