@@ -10,8 +10,5 @@ import bot.data.SpamUrlEntity;
 public interface SpamUrlsDao extends MongoRepository<SpamUrlEntity, String> {
   Optional<SpamUrlEntity> findOneByUrl(@Param("url") String url);
   
-  @Deprecated
-  List<SpamUrlEntity> findAllBySentDateLessThan(@Param("date") long date);
-  
   List<SpamUrlEntity> findAllBySentDateBetween(@Param("from") long from, @Param("to") long to);
 }
