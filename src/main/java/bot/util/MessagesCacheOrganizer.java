@@ -4,9 +4,11 @@ import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import bot.dal.MessagesDao;
 
+@Service
 public class MessagesCacheOrganizer implements CacheOrganizer {
   private MessagesDao messagesDao;
   private int intervalSeconds;
@@ -17,7 +19,7 @@ public class MessagesCacheOrganizer implements CacheOrganizer {
   }
   
   @Value("${interval.seconds:30}")
-  public void setDelayInMillis(int intervalSeconds) {
+  public void setIntervalSeconds(int intervalSeconds) {
     this.intervalSeconds = intervalSeconds;
   }
   

@@ -1,21 +1,23 @@
 package bot.listeners;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import bot.dal.MessagesDao;
 import bot.data.GuildEntity;
 import bot.data.MessageEntity;
 import bot.util.MessageSender;
 
+@Service
 public class FloodMessagesListener implements GeneralListener {
   private Logger logger = LoggerFactory.getLogger(FloodMessagesListener.class);
   private MessagesDao messagesDao;
@@ -40,7 +42,7 @@ public class FloodMessagesListener implements GeneralListener {
   @Override
   public void onMessageCreate(MessageCreateEvent event, GuildEntity guild) {
     event.getMessageAuthor().asUser().ifPresent(usr -> {
-      var now = Instant.now(Clock.system(ZoneId.of(ZoneOffset.UTC.toString())));
+      var now = Instant.now();
       var nowInMillis = now.toEpochMilli();
       // log the time the message was sent
       messagesDao.save(new MessageEntity(event.getChannel().getIdAsString(), nowInMillis, usr.getDiscriminatedName()));        
@@ -56,7 +58,8 @@ public class FloodMessagesListener implements GeneralListener {
         logger.warn("detected suspicious activity for server " + guild.getId() + " in channel "
                 + event.getChannel().getIdAsString() + "\npossible flood attack");
         
-        var msg = DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(now) 
+        var zonedNow = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));
+        var msg = DateTimeFormatter.ofPattern("dd/MM/uuuu, HH:mm:ss").format(zonedNow) 
                 + " (UTC) detected suspicious activity in **" + event.getServerTextChannel().get().getName() 
                 + "** (`" + event.getChannel().getId() + "`)"
                 + "by **" + usr.getDiscriminatedName() + "**\n"
