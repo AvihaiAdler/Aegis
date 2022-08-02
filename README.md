@@ -37,10 +37,10 @@ All commands must start with a prefix (`!` by default) except for the first one 
 | threshold  | An Integer between 0-(2^31)-1 (0 by default) | Aegis will set the threshold to the number you specified                                        | ADMIN/OWNER |
 | restrict   | None                                         | Aegis will operate in restrict mode (see [above](https://github.com/AvihaiAdler/Aegis#modes))   | ADMIN/OWNER |
 | unrestrict | None                                         | Aegis will operate in unrestrict mode (see [above](https://github.com/AvihaiAdler/Aegis#modes)) | ADMIN/OWNER |
-| suspect    | A list of words separated by spaces          | Aegis will save the specified words in it's suspicious list                                     | ADMIN/OWNER |
-| unsuspect  | A list of words separated by spaces          | Aegis will removed the specified words from it's suspicious list                                | ADMIN/OWNER |
-| block      | A list of (valid) urls separated by spaces   | Aegis will save the specified urls in it's blocked list                                         | ADMIN/OWNER |
-| unblock    | A list of (valid) urls separated by spaces   | Aegis will remove the specified urls from it's blocked list                                     | ADMIN/OWNER |
+| suspect    | A list of words separated by spaces          | Aegis will save the specified words in its suspicious list                                     | ADMIN/OWNER |
+| unsuspect  | A list of words separated by spaces          | Aegis will removed the specified words from its suspicious list                                | ADMIN/OWNER |
+| block      | A list of (valid) urls separated by spaces   | Aegis will save the specified urls in its blocked list                                         | ADMIN/OWNER |
+| unblock    | A list of (valid) urls separated by spaces   | Aegis will remove the specified urls from its blocked list                                     | ADMIN/OWNER |
 
 ### Known issues
 
