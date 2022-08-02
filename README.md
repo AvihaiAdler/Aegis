@@ -1,31 +1,31 @@
 ## Aegis
 
-Aegis is a simple anti-spam bot written in Java using [Javacord](https://javacord.org/), with the aim to help protect your server from malicious links scams. Aegis only save the bare minimum about your server. Currently the collected data is: the server id, the server name and your server configuration properties such as: your server prefix, the urls you decide to block etc.
+Aegis is a simple anti-spam bot written in Java using [Javacord](https://javacord.org/), with the aim to help protect your server from malicious link scams. Aegis only saves the bare minimum about your server. Currently the collected data is: the server id, the server name and server configuration properties such as: server prefix, urls one decides to block etc.
 
 Aegis will also log (internally) any message it deletes for a limited amount of time.
 
-Aegis _doesn't_ listen to private messages and _doesn't_ send private messages. This means that Aegis will respond to any command in the same channel the invoker used that command. I **highly** suggest to create a hidden channel - visible only to the administrators of the server and use the commands there.
+Aegis _doesn't_ listens to private messages and _doesn't_ sends private messages. This means that Aegis will respond to any command in the same channel it was invoked. I **highly** suggest to create a hidden channel - visible only to the administrators of the server and use the commands there.
 
-Upon joining your server Aegis will attempt to create a logging channel with the name `aegis-log`. I suggest you make that channel read only for everyone besides Aegis. Aegis will log every action it performs there. You can move that channel to any category after it's creation, just make sure Aegis can see it and write to it.
+Upon joining a server Aegis will attempt to create a logging channel with the name `aegis-log`. I suggest to make that channel read only for everyone besides Aegis. Aegis will log every action it performs there. The channel can be moved to any category after its creation, just make sure Aegis can sees it and can writes to it.
 
 ### Modes
 
 Aegis can operate in one of 2 modes:
 
 - restricted: Aegis will read and delete every message which has a `@everyone` tag and includes a url.
-- unresricted: Aegis will only delete messages which contains some words you deemed as suspicious (default mode) / contains urls you deemed as blocked.
+- unrestricted: Aegis will delete messages which contains some words an admin deem as suspicious / contains urls an admin deem as blocked. This mode is the default mode for Aegis
 
 ### Functionality
 
 Aegis has 3 different functionalities:
 
 - Restrict mode (explained above)
-- Aegis will scan messages for words you specified with the `suspect` command. If Aegis finds `threshold` or above number of those suspicious words in the message - it will delete the message and log the action
+- Aegis will scan messages for words an admin specified with the `suspect` command. If Aegis finds `threshold` or above number of those suspicious words in the message - it will delete the message and log the action
 - Aegis will scan messages for urls you specified with the `block` command. If Aegis finds a blocked url in a message - it will delete it and log the action
 
 ### Commands
 
-Aegis has a set of commands (listed below) you can use, note that currently only people with ADMINISTRATOR privileges / the server owner can invoke them.
+Aegis has a set of commands (listed below) one can use, note that currently only people with ADMINISTRATOR privileges / the server owner can invoke them.
 All commands must start with a prefix (`!` by default) except for the first one on the list.
 
 | Command    | Parameters                                   | Effect                                                                                          | Privileges  |
