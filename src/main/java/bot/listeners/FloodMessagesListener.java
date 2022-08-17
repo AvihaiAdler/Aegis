@@ -55,7 +55,7 @@ public class FloodMessagesListener implements GeneralListener {
       
       // messages count in the above period of time seems unreasonable
       if(messages.size() >= 3) {
-        logger.warn("detected suspicious activity for server " + guild.getId() + " in channel "
+        logger.warn("detected suspicious activity for server " + guild.getId() + " [" + guild.getGuildName() + "] in channel "
                 + event.getChannel().getIdAsString() + "\npossible flood attack");
         
         var zonedNow = ZonedDateTime.now(ZoneId.of(ZoneOffset.UTC.toString()));

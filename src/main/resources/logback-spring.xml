@@ -11,15 +11,15 @@
     <file>${LOG_ROOT}/${LOG_FILE_NAME}.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
       <fileNamePattern>${LOG_ROOT}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-      <!-- each archived file's size will be max 10MB -->
+      <!-- each archived file's size will be max 5MB -->
       <maxFileSize>5MB</maxFileSize>    
       <!-- 30 days to keep -->
       <maxHistory>30</maxHistory>
-      <!-- total size of all archive files, if total size > 100GB, it will delete old archived file -->
+      <!-- total size of all archive files, if total size > 1GB, it will delete old archived file -->
       <totalSizeCap>1GB</totalSizeCap>
     </rollingPolicy>
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} %-5level [%X{shard}] [%thread] %logger{36} - %msg%n</pattern>
+      <pattern>[%d{dd-MM-yyyy HH:mm:ss.SSS}] %-5level [%X{shard}] [%thread] %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
   

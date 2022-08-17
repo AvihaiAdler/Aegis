@@ -61,7 +61,7 @@ public class EveryoneListener implements GeneralListener {
           });      
         });
         
-        logger.warn("detected spam message for server " + guild.getId() + " in channel "
+        logger.warn("detected spam message for server " + guild.getId() + " [" + guild.getGuildName() + "] in channel "
                 + event.getChannel().getIdAsString() + "\noriginal message " + event.getMessageContent());
         
         // log to the log channel
